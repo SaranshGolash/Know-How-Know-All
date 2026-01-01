@@ -23,6 +23,96 @@ function Services() {
           description="Learn to build beautiful and functional websites and web applications"
           buttonText="Explore more"
         />
+        <ServiceCard
+          img=""
+          title="Backend Development"
+          description="Learn to build seamless and efficient backend systems and APIs"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Full Stack Development"
+          description="Learn to build complete web applications from frontend to backend"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Data Science"
+          description="Learn to analyze and interpret data to gain insights and make data-driven decisions"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="AI and Machine Learning"
+          description="Learn to build and train AI models to automate tasks and make predictions"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Cyber Security"
+          description="Learn to protect systems and data from cyber threats and attacks"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Digital Marketing"
+          description="Learn to market products and services online to reach a global audience"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Graphic Design"
+          description="Learn to create visual content for marketing and branding"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Content Writing"
+          description="Learn to write engaging and informative content for marketing and branding"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Social Media Management"
+          description="Learn to manage social media accounts and create engaging content"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Mobile App Development"
+          description="Learn to build mobile applications for iOS and Android platforms"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="UI/UX Design"
+          description="Learn to create user-friendly and visually appealing interfaces for websites and applications"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Digital Marketing"
+          description="Learn to market products and services online to reach a global audience"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Graphic Design"
+          description="Learn to create visual content for marketing and branding"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Content Writing"
+          description="Learn to write engaging and informative content for marketing and branding"
+          buttonText="Explore more"
+        />
+        <ServiceCard
+          img=""
+          title="Social Media Management"
+          description="Learn to manage social media accounts and create engaging content"
+          buttonText="Explore more"
+        />
       </div>
     </div>
   );
