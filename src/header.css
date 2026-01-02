@@ -68,20 +68,20 @@
 
 #login {
   background: transparent;
-  border: 2px solid #000;
+  border: 2px solid #2e4f21;
   color: #000;
   margin-right: 15px; /* Spacing between buttons */
 }
 
 #signup {
-  background: #000;
+  background: #2e4f21;
   color: #fff;
 }
 
 #login:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: #7d9276;
 }
 
 #signup:hover {
-  background: #333;
+  background: #7d9276;
 }

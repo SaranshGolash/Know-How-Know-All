@@ -1,11 +1,12 @@
 import React from "react";
+import "../services.css";
 
 function Services() {
   return (
     <div className="services">
       <div className="intro-services">
         <span>Services</span>
-        <h2>
+        <h2 style={{ color: "#2E4F21" }}>
           Let us help you grow, improve, and succeed so that you can shape your
           future with confidence and clarity
         </h2>
@@ -63,30 +64,6 @@ function ServicesCard() {
         />
         <ServiceCardContext
           img=""
-          title="Digital Marketing"
-          description="Learn to market products and services online to reach a global audience"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Graphic Design"
-          description="Learn to create visual content for marketing and branding"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Content Writing"
-          description="Learn to write engaging and informative content for marketing and branding"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Social Media Management"
-          description="Learn to manage social media accounts and create engaging content"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
           title="Mobile App Development"
           description="Learn to build mobile applications for iOS and Android platforms"
           buttonText="Explore more"
@@ -130,7 +107,7 @@ function ServiceCardContext({ img, title, description, buttonText }) {
   return (
     <div className="service-card">
       <img src={img} alt={title} />
-      <h3>{title}</h3>
+      <h3 style={{ color: "#2E4F21" }}>{title}</h3>
       <span>{description}</span>
       <button>{buttonText}</button>
     </div>

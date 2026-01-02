@@ -23,7 +23,7 @@
 .hero-section-context h1 {
   font-size: 48px;
   line-height: 1.2;
-  color: #1a1a1a;
+  color: #2e4f21;
 }
 
 .hero-section-context span {
@@ -37,7 +37,7 @@
 .hero-section-btn {
   width: fit-content;
   padding: 16px 32px;
-  background-color: #000;
+  background-color: #2e4f21;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -49,7 +49,7 @@
 
 .hero-section-btn:hover {
   transform: translateY(-2px);
-  background-color: #333;
+  background-color: #7d9276;
 }
 
 /* Right side image area */

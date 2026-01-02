@@ -5,12 +5,12 @@ function Header() {
   return (
     <div className="header">
       <div className="navBar">
-        <h4>Know-How-Know-All</h4>
+        <h4 style={{ color: "#2E4F21" }}>Know-How-Know-All</h4>
         <div className="nav-content">
-          <span style={{ fontSize: "18px" }}>about us</span>
-          <span style={{ fontSize: "18px" }}>services</span>
-          <span style={{ fontSize: "18px" }}>pricing</span>
-          <span style={{ fontSize: "18px" }}>support</span>
+          <span style={{ fontSize: "18px", color: "#2E4F21" }}>about us</span>
+          <span style={{ fontSize: "18px", color: "#2E4F21" }}>services</span>
+          <span style={{ fontSize: "18px", color: "#2E4F21" }}>pricing</span>
+          <span style={{ fontSize: "18px", color: "#2E4F21" }}>support</span>
         </div>
         <div>
           <button className="nav-btn" id="login">
