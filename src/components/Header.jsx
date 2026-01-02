@@ -1,17 +1,25 @@
 import React from "react";
+import "../hero.css";
 
 function Header() {
   return (
     <div className="header">
       <div className="navBar">
         <h4>Know-How-Know-All</h4>
-        <span>services</span>
-        <button className="nav-btn" id="login">
-          Login
-        </button>
-        <button className="nav-btn" id="signup">
-          SignUp
-        </button>
+        <div className="nav-content">
+          <span style={{ fontSize: "18px" }}>about us</span>
+          <span style={{ fontSize: "18px" }}>services</span>
+          <span style={{ fontSize: "18px" }}>pricing</span>
+          <span style={{ fontSize: "18px" }}>support</span>
+        </div>
+        <div>
+          <button className="nav-btn" id="login">
+            Login
+          </button>
+          <button className="nav-btn" id="signup">
+            SignUp
+          </button>
+        </div>
       </div>
       <HeroSection />
     </div>

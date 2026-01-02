@@ -1,0 +1,90 @@
+.hero-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background: #a0f1bd;
+
+  /* Layout constraints similar to Nav */
+  width: 100%;
+  max-width: 1280px;
+  padding: 60px 40px;
+  gap: 50px;
+}
+
+/* Left side content */
+.hero-section-context {
+  flex: 1; /* Takes up 50% space */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hero-section-context h1 {
+  font-size: 48px;
+  line-height: 1.2;
+  color: #1a1a1a;
+}
+
+.hero-section-context span {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #555;
+  max-width: 600px;
+}
+
+/* Hero CTA Button */
+.hero-section-btn {
+  width: fit-content;
+  padding: 16px 32px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.hero-section-btn:hover {
+  transform: translateY(-2px);
+  background-color: #333;
+}
+
+/* Right side image area */
+.hero-section-img {
+  flex: 1; /* Takes up 50% space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-section-img img {
+  width: 100%;
+  max-width: 500px; /* Prevents image from becoming too massive */
+  height: auto;
+  border-radius: 12px;
+  /* Placeholder background since src is empty in your code */
+  background-color: #ddd;
+  min-height: 300px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .navBar,
+  .hero-section {
+    flex-direction: column;
+    height: auto;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .navBar {
+    padding: 20px;
+  }
+
+  .hero-section-context {
+    align-items: center;
+  }
+}
