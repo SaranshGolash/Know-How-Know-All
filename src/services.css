@@ -10,7 +10,7 @@
 
   /* Desktop (Default) */
   width: 1280px;
-  height: 1972px;
+  height: auto;
   background: #f9f9f9;
 
   /* Centering on screen */
@@ -83,7 +83,7 @@
   /* 4 Columns for Desktop */
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  padding: 0 40px;
+  padding: 20px 40px;
   width: 100%;
   background: #a0f1bd;
 }
