@@ -43,11 +43,11 @@ function HiringCompanies() {
       <Company img="/images/google.png" name="Google" />
       <Company img="/images/nike.jpg" name="Nike" />
       <Company img="/images/byjus.png" name="Byjus" />
-      <Company img="" name="Snapchat" />
+      <Company img="/images/snapchat.png" name="Snapchat" />
       <Company img="/images/cognizant.png" name="Cognizant" />
       <Company img="/images/tcs.png" name="TCS" />
       <Company img="/images/delloite.png" name="Delloite" />
-      <Company img="" name="Know-How-Know-All" />
+      <Company img="/images/knowhowknowall.png" name="Know-How-Know-All" />
     </>
   );
 
@@ -69,14 +69,12 @@ function Company({ img, name }) {
     gap: "10px",
     margin: "0 40px",
     transition: "transform 0.3s ease",
-    cursor: "pointer",
   };
 
   const imgStyle = {
     height: "80px",
     width: "150px",
     objectFit: "contain",
-    display: "block",
   };
 
   const textStyle = {

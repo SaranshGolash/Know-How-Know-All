@@ -39,7 +39,11 @@ function HeroSection() {
         <button className="hero-section-btn">Check out the domains</button>
       </div>
       <div className="hero-section-img">
-        <img src="" alt="" />
+        <img
+          src="/images/knowhowknowall.png"
+          alt="know-how-know-all"
+          style={{ background: "#a0f1bd" }}
+        />
       </div>
     </div>
   );
