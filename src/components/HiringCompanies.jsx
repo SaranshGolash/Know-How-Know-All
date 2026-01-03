@@ -1,9 +1,6 @@
 import React from "react";
 
 function HiringCompanies() {
-  // 1. Define the Keyframes for the loop
-  // We move the track from 0 to -50% because we duplicated the content.
-  // When it hits -50% (the end of the first set), it snaps back to 0 seamlessly.
   const keyframesStyle = `
     @keyframes scrollLoop {
       0% { transform: translateX(0); }
@@ -11,10 +8,9 @@ function HiringCompanies() {
     }
   `;
 
-  // 2. Define Inline Styles
   const styles = {
     section: {
-      overflow: "hidden", // Hides the scrollbar
+      overflow: "hidden",
       width: "100%",
       backgroundColor: "#f9f9f9",
       padding: "40px 0",
@@ -22,9 +18,9 @@ function HiringCompanies() {
       position: "relative",
     },
     track: {
-      display: "inline-flex", // Allows the width to grow with content
-      animation: "scrollLoop 30s linear infinite", // The looping magic
-      width: "max-content", // Ensures the div is as wide as the companies
+      display: "inline-flex",
+      animation: "scrollLoop 30s linear infinite",
+      width: "max-content",
     },
     gradientOverlay: {
       position: "absolute",
@@ -75,12 +71,6 @@ function Company({ img, name }) {
     height: "80px",
     width: "150px",
     objectFit: "contain",
-  };
-
-  const textStyle = {
-    fontSize: "18px",
-    fontWeight: "bold",
-    color: "#333",
   };
 
   return (
