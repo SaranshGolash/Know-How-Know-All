@@ -1,115 +1,106 @@
-import React from "react";
-import "../services.css";
+import React, { useState, useEffect } from "react";
+import ServicesCardList from "./ServicesCardList";
 
 function Services() {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [isMainBtnHover, setIsMainBtnHover] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isTablet = windowWidth <= 1024;
+  const isMobile = windowWidth <= 600;
+
+  const styles = {
+    services: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      padding: "0px",
+      width: "100%",
+      maxWidth: isMobile ? "375px" : isTablet ? "800px" : "1280px", // Responsive Width
+      background: "#f9f9f9",
+      margin: "0 auto",
+      boxSizing: "border-box",
+    },
+    introServices: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      textAlign: "center",
+      padding: "60px 20px",
+      gap: "16px",
+      maxWidth: "800px",
+    },
+    introH2: {
+      fontSize: "32px",
+      color: "#2E4F21",
+      fontWeight: "700",
+      lineHeight: "1.3",
+    },
+    introSpan: {
+      fontSize: "22px",
+      color: "#666",
+      maxWidth: "600px",
+      lineHeight: "1.5",
+    },
+    exploreBtn: {
+      marginTop: "10px",
+      padding: "12px 24px",
+      // Dynamic Hover Background
+      backgroundColor: isMainBtnHover ? "#7d9276" : "#2e4f21",
+      color: "#fff",
+      border: "none",
+      borderRadius: "8px",
+      cursor: "pointer",
+      fontWeight: "600",
+      fontSize: "16px",
+      transition: "background-color 0.3s ease",
+    },
+    servicesCardsGrid: {
+      display: "grid",
+      // Responsive Grid Columns
+      gridTemplateColumns: isMobile
+        ? "1fr"
+        : isTablet
+        ? "repeat(2, 1fr)"
+        : "repeat(4, 1fr)",
+      gap: "20px",
+      padding: isMobile ? "0 16px" : isTablet ? "0 24px" : "20px 40px",
+      width: "100%",
+      boxSizing: "border-box",
+    },
+  };
+
   return (
-    <div className="services">
-      <div className="intro-services">
+    <div style={styles.services}>
+      <div style={styles.introServices}>
         <span>Services</span>
-        <h2 style={{ color: "#2E4F21" }}>
+        <h2 style={styles.introH2}>
           Let us help you grow, improve, and succeed so that you can shape your
           future with confidence and clarity
         </h2>
-        <span>
+        <span style={styles.introSpan}>
           Our services are designed to help you achieve your goals and dreams.
           From learning new skills to mastering existing ones, we've got you
           covered
         </span>
-        <button className="explore-services-btn">Explore our services</button>
+        <button
+          style={styles.exploreBtn}
+          onMouseEnter={() => setIsMainBtnHover(true)}
+          onMouseLeave={() => setIsMainBtnHover(false)}
+        >
+          Explore our services
+        </button>
       </div>
-      <ServicesCard />
-    </div>
-  );
-}
 
-function ServicesCard() {
-  return (
-    <>
-      <div className="services-cards">
-        <ServiceCardContext
-          img=""
-          title="Frontend Development"
-          description="Learn to build beautiful and functional websites and web applications"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Backend Development"
-          description="Learn to build seamless and efficient backend systems and APIs"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Full Stack Development"
-          description="Learn to build complete web applications from frontend to backend"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Data Science"
-          description="Learn to analyze and interpret data to gain insights and make data-driven decisions"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="AI and Machine Learning"
-          description="Learn to build and train AI models to automate tasks and make predictions"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Cyber Security"
-          description="Learn to protect systems and data from cyber threats and attacks"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Mobile App Development"
-          description="Learn to build mobile applications for iOS and Android platforms"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="UI/UX Design"
-          description="Learn to create user-friendly and visually appealing interfaces for websites and applications"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Digital Marketing"
-          description="Learn to market products and services online to reach a global audience"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Graphic Design"
-          description="Learn to create visual content for marketing and branding"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Content Writing"
-          description="Learn to write engaging and informative content for marketing and branding"
-          buttonText="Explore more"
-        />
-        <ServiceCardContext
-          img=""
-          title="Social Media Management"
-          description="Learn to manage social media accounts and create engaging content"
-          buttonText="Explore more"
-        />
+      {/* Passing the grid style down to the container */}
+      <div style={styles.servicesCardsGrid}>
+        <ServicesCardList />
       </div>
-    </>
-  );
-}
-
-function ServiceCardContext({ img, title, description, buttonText }) {
-  return (
-    <div className="service-card">
-      <img src={img} alt={title} />
-      <h3 style={{ color: "#2E4F21" }}>{title}</h3>
-      <span>{description}</span>
-      <button>{buttonText}</button>
     </div>
   );
 }
