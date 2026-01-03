@@ -3,7 +3,6 @@ import Header from "./Header";
 import Services from "./Services";
 import Testimonial from "./Testimonial";
 import HiringCompanies from "./HiringCompanies";
-import "../header.css";
 
 function App() {
   return (
