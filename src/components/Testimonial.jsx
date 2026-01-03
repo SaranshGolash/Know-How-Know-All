@@ -1,58 +1,84 @@
-import React from "react";
-import "../testimonial.css";
+import React, { useState, useEffect } from "react";
+import TestimonialCardContext from "./TestimonialCardContext";
 
 function Testimonial() {
-  return (
-    <div className="testimonial">
-      <div className="testimonial-context">
-        <h2 style={{ color: "#2E4F21" }}>Hear from our happy students</h2>
-        <span>What our students have to say about us</span>
-      </div>
-      <div className="testimonial-cards">
-        <TestimonialCardContext />
-      </div>
-    </div>
-  );
-}
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-function TestimonialCardContext() {
-  return (
-    <div className="testimonial-card-context">
-      <TestimonialContent
-        img=""
-        name="Somasree Nandi"
-        tag="Student"
-        location="Tripura, India"
-        review="I have been using this platform for the past 6 months and it has been a
-        great experience. I upskilled myself in ways I could not have imagined"
-      />
-      <TestimonialContent
-        img=""
-        name="Saransh Golash"
-        tag="Student"
-        location="West Bengal, India"
-        review="I have never seen something like this. It was a wonderful experience."
-      />
-      <TestimonialContent
-        img=""
-        name="Patrick James"
-        tag="Student"
-        location="California, USA"
-        review="I have been using this platform for the past 2 years and it has been a
-        great experience."
-      />
-    </div>
-  );
-}
+  // Update window width on resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-function TestimonialContent({ img, name, tag, location, review }) {
+  const isTablet = windowWidth <= 1024;
+  const isMobile = windowWidth <= 600;
+
+  const styles = {
+    testimonial: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: "10px",
+      background: "#f9f9f9",
+      boxSizing: "border-box",
+      margin: "0 auto",
+      // Dynamic Layout based on screen size
+      padding: isMobile ? "36px" : "100px",
+      width: "100%",
+      maxWidth: isMobile ? "375px" : isTablet ? "800px" : "1280px",
+      height: "auto",
+    },
+    context: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      textAlign: "center",
+      gap: "12px",
+      marginBottom: "40px",
+    },
+    h2: {
+      margin: 0,
+      fontSize: "32px",
+      fontWeight: "700",
+      color: "#2E4F21",
+    },
+    contextSpan: {
+      fontSize: "16px",
+      color: "#666",
+    },
+    // Wrapper to center the cards area
+    cardsWrapper: {
+      display: "flex",
+      justifyContent: "center",
+      width: "100%",
+    },
+    // The actual container that holds the cards
+    cardsContainer: {
+      display: "flex",
+      flexFlow: "row nowrap", // Keeps them in a line
+      justifyContent: isMobile ? "flex-start" : "space-evenly", // Left align on mobile for scrolling
+      gap: "20px",
+      width: "100%",
+      overflowX: "auto", // Allows horizontal scrolling if screen is too small
+      paddingBottom: "20px",
+    },
+  };
+
   return (
-    <div className="testimonial-content">
-      <img src={img} alt="" />
-      <span style={{ color: "#ddd" }}>{name}</span>
-      <span>{tag}</span>
-      <span>{location}</span>
-      <span>{review}</span>
+    <div style={styles.testimonial}>
+      <div style={styles.context}>
+        <h2 style={styles.h2}>Hear from our happy students</h2>
+        <span style={styles.contextSpan}>
+          What our students have to say about us
+        </span>
+      </div>
+
+      <div style={styles.cardsWrapper}>
+        <div style={styles.cardsContainer}>
+          <TestimonialCardContext />
+        </div>
+      </div>
     </div>
   );
 }
