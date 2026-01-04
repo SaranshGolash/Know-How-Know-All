@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import HeroSection from "./HeroSection";
+import { Link } from "react-router-dom";
 
 function Header() {
   const [isLoginHover, setIsLoginHover] = useState(false);
@@ -74,38 +74,50 @@ function Header() {
     <div style={styles.header}>
       <div style={styles.navBar}>
         {/* Logo */}
-        <h4 style={styles.logoText}>Know-How-Know-All</h4>
+        <Link to="/" style={styles.logoText}>
+          Know-How-Know-All
+        </Link>
 
         {/* Navigation Links */}
         <div style={styles.navContent}>
-          <span style={styles.navLink}>about us</span>
-          <span style={styles.navLink}>services</span>
-          <span style={styles.navLink}>pricing</span>
-          <span style={styles.navLink}>support</span>
+          <Link to="about" style={styles.navLink}>
+            about us
+          </Link>
+          <Link to="/services" style={styles.navLink}>
+            services
+          </Link>
+          <Link to="/pricing" style={styles.navLink}>
+            pricing
+          </Link>
+          <Link to="/support" style={styles.navLink}>
+            support
+          </Link>
         </div>
 
         {/* Buttons */}
         <div>
-          <button
-            id="login"
-            style={{ ...styles.navBtn, ...styles.login }}
-            onMouseEnter={() => setIsLoginHover(true)}
-            onMouseLeave={() => setIsLoginHover(false)}
-          >
-            Login
-          </button>
-          <button
-            id="signup"
-            style={{ ...styles.navBtn, ...styles.signup }}
-            onMouseEnter={() => setIsSignupHover(true)}
-            onMouseLeave={() => setIsSignupHover(false)}
-          >
-            SignUp
-          </button>
+          <Link to="/login">
+            <button
+              id="login"
+              style={{ ...styles.navBtn, ...styles.login }}
+              onMouseEnter={() => setIsLoginHover(true)}
+              onMouseLeave={() => setIsLoginHover(false)}
+            >
+              Login
+            </button>
+          </Link>
+          <Link to="/signup">
+            <button
+              id="signup"
+              style={{ ...styles.navBtn, ...styles.signup }}
+              onMouseEnter={() => setIsSignupHover(true)}
+              onMouseLeave={() => setIsSignupHover(false)}
+            >
+              SignUp
+            </button>
+          </Link>
         </div>
       </div>
-
-      <HeroSection />
     </div>
   );
 }
