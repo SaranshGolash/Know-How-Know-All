@@ -25,8 +25,7 @@ function Header() {
       padding: "0 40px",
       height: "101px",
       width: "100%",
-      maxWidth: "1280px",
-      margin: "0 auto",
+      margin: "0px",
       background: "#a0f1bd",
       boxSizing: "border-box", // Important for padding
     },
@@ -42,12 +41,14 @@ function Header() {
       color: "#2E4F21", // Updated to your preferred dark green
       cursor: "pointer",
       margin: 0,
+      textDecoration: "none",
     },
     navLink: {
       fontSize: "18px", // Updated from 16px to match your JSX
       fontWeight: "500",
       cursor: "pointer",
       color: "#2E4F21",
+      textDecoration: "none",
     },
     navBtn: {
       padding: "10px 24px",
@@ -57,6 +58,7 @@ function Header() {
       fontWeight: "600",
       cursor: "pointer",
       transition: "all 0.3s ease",
+      textDecoration: "none",
     },
     login: {
       background: isLoginHover ? "#7d9267" : "transparent",

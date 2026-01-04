@@ -12,7 +12,6 @@ function HeroSection() {
       justifyContent: "space-between",
       background: "#a0f1bd",
       width: "100%",
-      maxWidth: "1280px",
       padding: "60px 40px",
       gap: "50px",
       boxSizing: "border-box",
