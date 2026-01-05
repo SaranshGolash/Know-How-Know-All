@@ -5,6 +5,7 @@ import HeroSection from "./HeroSection";
 import Services from "./Services";
 import Testimonial from "./Testimonial";
 import HiringCompanies from "./HiringCompanies";
+import About from "./About";
 
 function App() {
   return (
@@ -24,8 +25,8 @@ function App() {
             }
           />
           <Route path="/services" element={<Services />} />
-          {/*<Route path="/about" element={<About />} />
-          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/about" element={<About />} />
+          {/*<Route path="/pricing" element={<Pricing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />*/}
         </Routes>
