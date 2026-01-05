@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./Header";
+import Footer from "./Footer";
 import HeroSection from "./HeroSection";
 import Services from "./Services";
 import Testimonial from "./Testimonial";
@@ -30,6 +31,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />*/}
         </Routes>
+        <Footer />
       </div>
     </BrowserRouter>
   );
