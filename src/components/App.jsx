@@ -8,6 +8,7 @@ import Testimonial from "./Testimonial";
 import HiringCompanies from "./HiringCompanies";
 import About from "./About";
 import Login from "./Login";
+import Signup from "./Signup";
 
 function MainLayout() {
   return (
@@ -44,7 +45,7 @@ function App() {
           </Route>
 
           <Route path="/login" element={<Login />} />
-          {/* <Route path="/signup" element={<Signup />} /> */}
+          <Route path="/signup" element={<Signup />} />
         </Routes>
       </div>
     </BrowserRouter>
