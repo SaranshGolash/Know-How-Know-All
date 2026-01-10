@@ -10,6 +10,7 @@ import About from "./About";
 import Pricing from "./Pricing";
 import Login from "./Login";
 import Signup from "./Signup";
+import { AuthProvider } from "../context/AuthContext";
 
 function MainLayout() {
   return (
@@ -24,32 +25,34 @@ function MainLayout() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className="landing-page">
-        <Routes>
-          {/* Wrap pages that needs the Header and Footer inside the Layout */}
-          <Route element={<MainLayout />}>
-            <Route
-              path="/"
-              element={
-                <>
-                  <HeroSection />
-                  <Services />
-                  <Testimonial />
-                  <HiringCompanies />
-                </>
-              }
-            />
-            <Route path="/services" element={<Services />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/pricing" element={<Pricing />} />
-          </Route>
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="landing-page">
+          <Routes>
+            {/* Wrap pages that needs the Header and Footer inside the Layout */}
+            <Route element={<MainLayout />}>
+              <Route
+                path="/"
+                element={
+                  <>
+                    <HeroSection />
+                    <Services />
+                    <Testimonial />
+                    <HiringCompanies />
+                  </>
+                }
+              />
+              <Route path="/services" element={<Services />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/pricing" element={<Pricing />} />
+            </Route>
 
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

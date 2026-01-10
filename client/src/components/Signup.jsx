@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ModernInput from "./ModernInput";
 
 function Signup() {
-  // 1. Form States
+  // Form States
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate();
 
-  // 2. UI States
+  // UI States
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isBtnHover, setIsBtnHover] = useState(false);
 
@@ -42,9 +43,9 @@ function Signup() {
 
       if (response.ok) {
         // Success!
-        alert("Signup Successful! Check your console for the token.");
+        alert("Signup Successful! Please Login.");
         console.log("Server Token:", data.token);
-        // Redirect to login page here
+        navigate("/Login");
       } else {
         // Error (e.g., User already exists)
         alert(data.message);
@@ -55,7 +56,7 @@ function Signup() {
     }
   };
 
-  // 3. Styles
+  // Styles
   const styles = {
     signupSection: {
       display: "flex",

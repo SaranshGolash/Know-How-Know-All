@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import ModernInput from "./ModernInput";
 
 function Login() {
@@ -7,6 +8,8 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
   // State for responsiveness and interactions
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isBtnHover, setIsBtnHover] = useState(false);
@@ -19,9 +22,30 @@ function Login() {
 
   const isMobile = windowWidth <= 768;
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Logging in with:", email, password);
+    try {
+      const response = await fetch("http://localhost:5000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // 1. Save Token and Update Global State
+        login(data.token);
+
+        // 2. Redirect to Landing Page
+        navigate("/");
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Server error");
+    }
   };
 
   const styles = {
