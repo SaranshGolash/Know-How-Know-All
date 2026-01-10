@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 function Header() {
+  const { user, logout } = useContext(AuthContext);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [isLoginHover, setIsLoginHover] = useState(false);
   const [isSignupHover, setIsSignupHover] = useState(false);
 
@@ -60,6 +63,11 @@ function Header() {
       transition: "all 0.3s ease",
       textDecoration: "none",
     },
+    authButtons: {
+      display: "flex",
+      gap: "8px",
+      alignItems: "center",
+    },
     login: {
       background: isLoginHover ? "#7d9267" : "transparent",
       border: "2px solid #2e4f21",
@@ -69,6 +77,45 @@ function Header() {
     signup: {
       background: isSignupHover ? "#7d9267" : "#2e4f21",
       color: "#fff",
+    },
+    userContainer: {
+      position: "relative",
+      cursor: "pointer",
+    },
+    avatar: {
+      width: "40px",
+      height: "40px",
+      borderRadius: "50%",
+      backgroundColor: "#2E4F21",
+      color: "#fff",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      fontWeight: "bold",
+      fontSize: "30px",
+    },
+    dropdownMenu: {
+      position: "absolute",
+      top: "50px",
+      right: "0",
+      backgroundColor: "#fff",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+      borderRadius: "8px",
+      padding: "10px",
+      display: showDropdown ? "flex" : "none", // Toggle visibility
+      flexDirection: "column",
+      gap: "10px",
+      minWidth: "150px",
+      zIndex: 100,
+    },
+    dropdownItem: {
+      fontSize: "14px",
+      color: "#333",
+      textDecoration: "none",
+      padding: "8px",
+      borderRadius: "4px",
+      cursor: "pointer",
+      transition: "background 0.2s",
     },
   };
 
@@ -97,28 +144,62 @@ function Header() {
         </div>
 
         {/* Buttons */}
-        <div>
-          <Link to="/login">
-            <button
-              id="login"
-              style={{ ...styles.navBtn, ...styles.login }}
-              onMouseEnter={() => setIsLoginHover(true)}
-              onMouseLeave={() => setIsLoginHover(false)}
-            >
-              Login
-            </button>
-          </Link>
-          <Link to="/signup">
-            <button
-              id="signup"
-              style={{ ...styles.navBtn, ...styles.signup }}
-              onMouseEnter={() => setIsSignupHover(true)}
-              onMouseLeave={() => setIsSignupHover(false)}
-            >
-              SignUp
-            </button>
-          </Link>
-        </div>
+        {user ? (
+          // OPTION A: If Logged In -> Show User Avatar
+          <div
+            style={styles.userContainer}
+            onClick={() => setShowDropdown(!showDropdown)}
+          >
+            <div style={styles.avatar}>
+              {user.name.charAt(1)} {/* Shows first letter of name */}
+            </div>
+
+            {/* Dropdown Menu */}
+            <div style={styles.dropdownMenu}>
+              <span
+                style={{
+                  ...styles.dropdownItem,
+                  fontWeight: "bold",
+                  borderBottom: "1px solid #eee",
+                }}
+              >
+                My Profile
+              </span>
+              <Link to="/settings" style={styles.dropdownItem}>
+                Settings
+              </Link>
+              <div
+                style={{ ...styles.dropdownItem, color: "red" }}
+                onClick={logout} // Call Logout from Context
+              >
+                Logout
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.authButtons}>
+            <Link to="/login">
+              <button
+                id="login"
+                style={{ ...styles.navBtn, ...styles.login }}
+                onMouseEnter={() => setIsLoginHover(true)}
+                onMouseLeave={() => setIsLoginHover(false)}
+              >
+                Login
+              </button>
+            </Link>
+            <Link to="/signup">
+              <button
+                id="signup"
+                style={{ ...styles.navBtn, ...styles.signup }}
+                onMouseEnter={() => setIsSignupHover(true)}
+                onMouseLeave={() => setIsSignupHover(false)}
+              >
+                SignUp
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
