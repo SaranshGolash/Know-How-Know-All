@@ -7,6 +7,7 @@ import Services from "./Services";
 import Testimonial from "./Testimonial";
 import HiringCompanies from "./HiringCompanies";
 import About from "./About";
+import Pricing from "./Pricing";
 import Login from "./Login";
 import Signup from "./Signup";
 
@@ -41,7 +42,7 @@ function App() {
             />
             <Route path="/services" element={<Services />} />
             <Route path="/about" element={<About />} />
-            {/* <Route path="/pricing" element={<Pricing />} /> */}
+            <Route path="/pricing" element={<Pricing />} />
           </Route>
 
           <Route path="/login" element={<Login />} />
