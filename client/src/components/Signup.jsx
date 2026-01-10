@@ -21,14 +21,38 @@ function Signup() {
 
   const isMobile = windowWidth <= 768;
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    console.log("Signing up:", { fullName, email, password });
-    // Backend connection logic goes here
+
+    try {
+      // Send data to the Backend
+      const response = await fetch("http://localhost:5000/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName, email, password }),
+      });
+
+      // Get the response from the server
+      const data = await response.json();
+
+      if (response.ok) {
+        // Success!
+        alert("Signup Successful! Check your console for the token.");
+        console.log("Server Token:", data.token);
+        // Redirect to login page here
+      } else {
+        // Error (e.g., User already exists)
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Server is not responding. Is it running?");
+    }
   };
 
   // 3. Styles
