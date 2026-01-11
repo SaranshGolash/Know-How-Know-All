@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useLocation, Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { handleCheckout } from "../utils/paymentHandler";
 
 function AddToCart() {
   const location = useLocation();
+  const { user } = useContext(AuthContext);
   // Get the item passed from ExploreMore, if available
   const newItem = location.state?.item;
 
@@ -85,7 +88,7 @@ function AddToCart() {
             </div>
             <button
               style={styles.checkoutBtn}
-              onClick={() => alert("Proceeding to Checkout...")}
+              onClick={() => handleCheckout(user?.name ? "1" : null, newItem)}
             >
               Checkout
             </button>
