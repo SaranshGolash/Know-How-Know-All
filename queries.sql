@@ -5,3 +5,12 @@ CREATE TABLE users (
 	password_hash VARCHAR(255) NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 );
+
+CREATE TABLE purchases (
+    purchase_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id),
+    course_title VARCHAR(255) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_status VARCHAR(50) DEFAULT 'completed',
+    purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
