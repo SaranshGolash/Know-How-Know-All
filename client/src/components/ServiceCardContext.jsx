@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 function ServiceCardContext({ img, title, description, buttonText }) {
   const [isCardHover, setIsCardHover] = useState(false);
   const [isBtnHover, setIsBtnHover] = useState(false);
+  const serviceData = { title, description, img };
 
   const cardStyles = {
     container: {
@@ -60,13 +62,15 @@ function ServiceCardContext({ img, title, description, buttonText }) {
       <img src={img} alt={title} style={cardStyles.img} />
       <h3 style={cardStyles.h3}>{title}</h3>
       <span style={cardStyles.span}>{description}</span>
-      <button
-        style={cardStyles.button}
-        onMouseEnter={() => setIsBtnHover(true)}
-        onMouseLeave={() => setIsBtnHover(false)}
-      >
-        {buttonText}
-      </button>
+      <Link to="/explore" state={serviceData}>
+        <button
+          style={cardStyles.button}
+          onMouseEnter={() => setIsBtnHover(true)}
+          onMouseLeave={() => setIsBtnHover(false)}
+        >
+          {buttonText}
+        </button>
+      </Link>
     </div>
   );
 }

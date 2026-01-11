@@ -4,6 +4,8 @@ import Header from "./Header";
 import Footer from "./Footer";
 import HeroSection from "./HeroSection";
 import Services from "./Services";
+import ExploreMore from "./ExploreMore";
+import AddToCart from "./AddToCart";
 import Testimonial from "./Testimonial";
 import HiringCompanies from "./HiringCompanies";
 import About from "./About";
@@ -43,6 +45,8 @@ function App() {
                 }
               />
               <Route path="/services" element={<Services />} />
+              <Route path="/explore" element={<ExploreMore />} />
+              <Route path="/cart" element={<AddToCart />} />
               <Route path="/about" element={<About />} />
               <Route path="/pricing" element={<Pricing />} />
             </Route>
