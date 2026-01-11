@@ -1,5 +1,6 @@
 import React from "react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function HeroSection() {
   const [isBtnHover, setIsBtnHover] = useState(false);
@@ -77,13 +78,15 @@ function HeroSection() {
         </p>
 
         {/* Added Mouse Events for Hover */}
-        <button
-          style={styles.btn}
-          onMouseEnter={() => setIsBtnHover(true)}
-          onMouseLeave={() => setIsBtnHover(false)}
-        >
-          Check out the domains
-        </button>
+        <Link to="/services" style={{ textDecoration: "none" }}>
+          <button
+            style={styles.btn}
+            onMouseEnter={() => setIsBtnHover(true)}
+            onMouseLeave={() => setIsBtnHover(false)}
+          >
+            Check out the domains
+          </button>
+        </Link>
       </div>
 
       <div style={styles.imgContainer}>

@@ -9,8 +9,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      // In a real app, you would decode the token to get the user name.
-      // For now, we just assume if there is a token, they are logged in.
       setUser({ name: "User" });
     }
   }, []);
