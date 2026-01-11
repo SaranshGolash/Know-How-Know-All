@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { handleCheckout } from "../utils/paymentHandler";
 
 function ExploreMore() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   // Retrieve data passed from the previous page
   const service = location.state;
@@ -143,7 +146,7 @@ function ExploreMore() {
 
           <button
             style={styles.btnBuy}
-            onClick={() => alert("Redirecting to Payment Gateway...")}
+            onClick={() => handleCheckout(user ? "1" : null, service)}
           >
             Buy Now
           </button>

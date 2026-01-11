@@ -13,9 +13,9 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = (token) => {
+  const login = (token, userId) => {
     localStorage.setItem("token", token);
-    setUser({ name: "User" }); // Update state to trigger UI changes
+    setUser({ id: userId, name: "User" }); // Update state to trigger UI changes
   };
 
   const logout = () => {

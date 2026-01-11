@@ -141,7 +141,7 @@ app.post("/create-checkout-session", async (req, res) => {
 
 // Verifying and saving to database route
 
-pp.post("/payment-success", async (req, res) => {
+app.post("/payment-success", async (req, res) => {
   try {
     const { sessionId } = req.body;
 
