@@ -78,7 +78,9 @@ function Services() {
   return (
     <div style={styles.services}>
       <div style={styles.introServices}>
-        <span>Services</span>
+        <span>
+          <b>Services</b>
+        </span>
         <h2 style={styles.introH2}>
           Let us help you grow, improve, and succeed so that you can shape your
           future with confidence and clarity
@@ -88,13 +90,6 @@ function Services() {
           From learning new skills to mastering existing ones, we've got you
           covered
         </span>
-        <button
-          style={styles.exploreBtn}
-          onMouseEnter={() => setIsMainBtnHover(true)}
-          onMouseLeave={() => setIsMainBtnHover(false)}
-        >
-          Explore our services
-        </button>
       </div>
 
       {/* Passing the grid style down to the container */}

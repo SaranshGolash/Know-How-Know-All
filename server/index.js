@@ -4,10 +4,14 @@ const pool = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const { webSocketServer } = require("ws");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
 
 const app = express();
 const PORT = 5000;
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Middleware
 app.use(cors());
@@ -169,6 +173,83 @@ app.post("/payment-success", async (req, res) => {
   }
 });
 
+// Route for getting user's purchased courses
+
+app.get("/user/purchases/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const purchases = await pool.query(
+      "SELECT * FROM purchases WHERE user_id = $1 ORDER BY purchase_date DESC",
+      [userId]
+    );
+    res.json(purchases.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// WEBSOCKET SERVER (For AI Teacher)
+const wss = new WebSocketServer({ port: 8080 });
+
+wss.on("connection", (ws) => {
+  console.log("Client connected to AI Teacher");
+
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  let chatSession = null;
+
+  ws.on("message", async (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      // Initialize Chat with Context if it is the first message
+      if (data.type === "init") {
+        chatSession = model.startChat({
+          history: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `You are an AI Tutor teaching a course on: ${data.courseTitle}. 
+                    Interact with the student via video/audio input. Be encouraging, concise, and helpful. 
+                    If you see them confused in the image, ask if they need help.`,
+                },
+              ],
+            },
+          ],
+        });
+        ws.send(
+          JSON.stringify({ type: "ready", text: "I am ready to teach!" })
+        );
+      }
+
+      // Handle Live Frame/Audio Data
+      else if (data.type === "stream" && chatSession) {
+        // data.image should be a base64 string of the webcam frame
+        // data.text (optional) could be speech-to-text input
+
+        const result = await chatSession.sendMessage([
+          {
+            text:
+              "Analyze this frame from my webcam and my question: " +
+              (data.prompt || "What am I showing you/What should I do next?"),
+          },
+          { inlineData: { mimeType: "image/jpeg", data: data.image } },
+        ]);
+
+        const responseText = result.response.text();
+
+        ws.send(JSON.stringify({ type: "ai_response", text: responseText }));
+      }
+    } catch (error) {
+      console.error("AI Error:", error);
+      ws.send(JSON.stringify({ type: "error", text: "AI is thinking..." }));
+    }
+  });
+});
+
+console.log("WebSocket Server running on port 8080");
