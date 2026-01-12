@@ -151,7 +151,8 @@ function Header() {
             onClick={() => setShowDropdown(!showDropdown)}
           >
             <div style={styles.avatar}>
-              {user.name.charAt(1)} {/* Shows first letter of name */}
+              {user.name[0] || user.email[0] || "U".charAt(0).toUpperCase}
+              {/* Shows first letter of name */}
             </div>
 
             {/* Dropdown Menu */}
@@ -165,6 +166,9 @@ function Header() {
               >
                 My Profile
               </span>
+              <Link to="/my-learning" style={styles.dropdownItem}>
+                My Learning
+              </Link>
               <Link to="/settings" style={styles.dropdownItem}>
                 Settings
               </Link>

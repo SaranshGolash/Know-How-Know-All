@@ -4,7 +4,7 @@ const pool = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const { webSocketServer } = require("ws");
+const { WebSocketServer } = require("ws");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
 
@@ -93,7 +93,15 @@ app.post("/auth/login", async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.json({ token, message: "Login successful!" });
+    res.json({
+      token,
+      user: {
+        id: user.rows[0].user_id,
+        name: user.rows[0].full_name,
+        email: user.rows[0].email,
+      },
+      message: "Login successful!",
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");

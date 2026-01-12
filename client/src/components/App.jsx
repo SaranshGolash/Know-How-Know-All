@@ -11,6 +11,8 @@ import Testimonial from "./Testimonial";
 import HiringCompanies from "./HiringCompanies";
 import About from "./About";
 import Pricing from "./Pricing";
+import MyLearning from "./MyLearning";
+import AITeacher from "./AITeacher";
 import Login from "./Login";
 import Signup from "./Signup";
 import { AuthProvider } from "../context/AuthContext";
@@ -51,8 +53,9 @@ function App() {
               <Route path="/success" element={<Success />} />
               <Route path="/about" element={<About />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/my-learning" element={<MyLearning />} />
             </Route>
-
+            <Route path="/ai=teacher" element={<AITeacher />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
           </Routes>

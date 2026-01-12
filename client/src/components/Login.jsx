@@ -35,7 +35,7 @@ function Login() {
 
       if (response.ok) {
         // 1. Save Token and Update Global State
-        login(data.token);
+        login(data.token, data.user);
 
         // 2. Redirect to Landing Page
         navigate("/");

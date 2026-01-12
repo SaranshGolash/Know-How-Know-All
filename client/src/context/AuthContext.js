@@ -8,18 +8,21 @@ export const AuthProvider = ({ children }) => {
   // Check if user is already logged in when the app loads
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
     if (token) {
-      setUser({ name: "User" });
+      setUser(JSON.parse(storedUser));
     }
   }, []);
 
-  const login = (token, userId) => {
+  const login = (token, userData) => {
     localStorage.setItem("token", token);
-    setUser({ id: userId, name: "User" }); // Update state to trigger UI changes
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser({ userData }); // Update state to trigger UI changes
   };
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
   };
 
