@@ -222,9 +222,14 @@ wss.on("connection", (ws) => {
               role: "user",
               parts: [
                 {
-                  text: `You are an AI Tutor teaching a course on: ${data.courseTitle}. 
-                    Interact with the student via video/audio input. Be encouraging, concise, and helpful. 
-                    If you see them confused in the image, ask if they need help.`,
+                  text: `You are an expert AI Tutor for the course: ${data.courseTitle}. 
+                
+                Your Goal:
+                1. Observe the student's video feed (they might show code, diagrams, or their face).
+                2. If they are struggling, offer hints.
+                3. If they ask a question, answer concisely.
+                4. Keep responses short and conversational (under 2 sentences) because you will be speaking them out loud.
+                `,
                 },
               ],
             },
