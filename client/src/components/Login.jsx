@@ -34,8 +34,13 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        const safeCase = {
+          id: data.user.id || data.user.user_id,
+          name: data.user.name || data.user.full_name,
+          email: data.user.email,
+        };
         // 1. Save Token and Update Global State
-        login(data.token, data.user);
+        login(data.token, safeCase);
 
         // 2. Redirect to Landing Page
         navigate("/");

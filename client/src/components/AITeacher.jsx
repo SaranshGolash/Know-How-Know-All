@@ -5,26 +5,26 @@ import { useLocation, useNavigate } from "react-router-dom";
 function AITeacher() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // SAFETY CHECK 1: Did we receive course data?
   const course = location.state?.course;
 
-  // Refs for managing media and socket
+  // SAFETY CHECK 2: Logs to Debug
+  console.log("AI Teacher Component Loaded");
+  console.log("Course Data:", course);
+
   const webcamRef = useRef(null);
   const ws = useRef(null);
-
-  // State
   const [aiResponse, setAiResponse] = useState("Connecting to AI Teacher...");
-  const [isSessionActive, setIsSessionActive] = useState(false);
   const [userPrompt, setUserPrompt] = useState("");
 
-  // Initialize WebSocket Connection
+  // --- 2. WEBSOCKET LOGIC ---
   useEffect(() => {
-    if (!course) return;
-
+    // Connect to Backend WS
     ws.current = new WebSocket("ws://localhost:8080");
 
     ws.current.onopen = () => {
-      console.log("Connected to AI");
-      // Send Init message to set context
+      console.log("✅ WebSocket Connected");
       ws.current.send(
         JSON.stringify({
           type: "init",
@@ -35,55 +35,79 @@ function AITeacher() {
 
     ws.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === "ai_response") {
-        setAiResponse(data.text);
-        speak(data.text); // Text-to-Speech
-      } else if (data.type === "ready") {
+      if (data.type === "ai_response" || data.type === "ready") {
         setAiResponse(data.text);
         speak(data.text);
       }
     };
 
+    ws.current.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+      setAiResponse(
+        "⚠️ Error connecting to AI Server. Is the backend running?"
+      );
+    };
+
     return () => {
       if (ws.current) ws.current.close();
-      window.speechSynthesis.cancel(); // Stop talking on exit
+      window.speechSynthesis.cancel();
     };
   }, [course]);
 
-  // Helper: Send Frame to AI
+  // --- 1. HANDLE MISSING DATA (Prevents Blank Screen) ---
+  if (!course) {
+    return (
+      <div style={{ padding: "50px", textAlign: "center", marginTop: "100px" }}>
+        <h1>⚠️ No Class Selected</h1>
+        <p>
+          You cannot access this page directly. Please go back to My Learning.
+        </p>
+        <button
+          onClick={() => navigate("/my-learning")}
+          style={{
+            padding: "10px 20px",
+            background: "#2E4F21",
+            color: "#fff",
+            border: "none",
+            marginTop: "20px",
+            cursor: "pointer",
+          }}
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
   const sendFrameToAI = () => {
     if (webcamRef.current && ws.current.readyState === WebSocket.OPEN) {
       const imageSrc = webcamRef.current.getScreenshot();
-      // Remove data:image/jpeg;base64, prefix
-      const base64Data = imageSrc.split(",")[1];
-
-      ws.current.send(
-        JSON.stringify({
-          type: "stream",
-          image: base64Data,
-          prompt: userPrompt || "What do you see? Teach me about this context.",
-        })
-      );
-
-      setUserPrompt(""); // Clear prompt after sending
+      if (imageSrc) {
+        const base64Data = imageSrc.split(",")[1];
+        ws.current.send(
+          JSON.stringify({
+            type: "stream",
+            image: base64Data,
+            prompt:
+              userPrompt || "What do you see? Teach me about this context.",
+          })
+        );
+        setUserPrompt("");
+      }
     }
   };
 
-  // Helper: Text to Speech (Browser Native)
   const speak = (text) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1;
     window.speechSynthesis.speak(utterance);
   };
 
-  if (!course) return <div style={{ padding: 50 }}>No Course Selected</div>;
-
-  // STYLES
+  // --- 3. THE UI ---
   const styles = {
     container: {
       display: "flex",
-      height: "calc(100vh - 80px)", // Full height minus header
+      height: "100vh",
       background: "#1a1a1a",
       color: "#fff",
     },
@@ -100,61 +124,37 @@ function AITeacher() {
       padding: "30px",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "space-between",
-      borderLeft: "2px solid #2E4F21",
       background: "#121212",
-    },
-    aiAvatar: {
-      width: "120px",
-      height: "120px",
-      borderRadius: "50%",
-      background: "linear-gradient(45deg, #2E4F21, #a0f1bd)",
-      margin: "0 auto 20px auto",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "40px",
-      boxShadow: "0 0 30px rgba(160, 241, 189, 0.3)",
-      animation: "pulse 2s infinite",
+      borderLeft: "1px solid #333",
     },
     responseBox: {
       background: "#222",
       padding: "20px",
-      borderRadius: "12px",
-      minHeight: "200px",
-      fontSize: "16px",
-      lineHeight: "1.6",
-      color: "#a0f1bd",
+      borderRadius: "8px",
+      minHeight: "150px",
       marginBottom: "20px",
-    },
-    controls: {
-      display: "flex",
-      gap: "10px",
-      flexDirection: "column",
+      color: "#a0f1bd",
     },
     input: {
       padding: "15px",
-      borderRadius: "8px",
+      width: "90%",
+      borderRadius: "5px",
       border: "none",
-      background: "#333",
-      color: "#fff",
       marginBottom: "10px",
     },
     btn: {
       padding: "15px",
+      width: "100%",
       background: "#2E4F21",
-      color: "#fff",
+      color: "white",
       border: "none",
-      borderRadius: "8px",
       cursor: "pointer",
       fontWeight: "bold",
-      fontSize: "16px",
     },
   };
 
   return (
     <div style={styles.container}>
-      {/* LEFT: User Video */}
       <div style={styles.videoSection}>
         <Webcam
           audio={false}
@@ -176,31 +176,25 @@ function AITeacher() {
         </div>
       </div>
 
-      {/* RIGHT: AI Interaction */}
       <div style={styles.aiSection}>
-        <div>
-          <div style={styles.aiAvatar}>🤖</div>
-          <div style={styles.responseBox}>{aiResponse}</div>
-        </div>
+        <h2>AI Tutor 🤖</h2>
+        <div style={styles.responseBox}>{aiResponse}</div>
 
-        <div style={styles.controls}>
-          <input
-            type="text"
-            style={styles.input}
-            placeholder="Type a specific question (or just click Ask AI)"
-            value={userPrompt}
-            onChange={(e) => setUserPrompt(e.target.value)}
-          />
-          <button style={styles.btn} onClick={sendFrameToAI}>
-            📸 Show AI & Ask
-          </button>
-          <button
-            style={{ ...styles.btn, background: "#444" }}
-            onClick={() => navigate("/my-learning")}
-          >
-            End Class
-          </button>
-        </div>
+        <input
+          style={styles.input}
+          value={userPrompt}
+          onChange={(e) => setUserPrompt(e.target.value)}
+          placeholder="Ask a question..."
+        />
+        <button style={styles.btn} onClick={sendFrameToAI}>
+          📸 Ask AI
+        </button>
+        <button
+          style={{ ...styles.btn, marginTop: "10px", background: "#555" }}
+          onClick={() => navigate("/my-learning")}
+        >
+          End Class
+        </button>
       </div>
     </div>
   );

@@ -151,7 +151,7 @@ function Header() {
             onClick={() => setShowDropdown(!showDropdown)}
           >
             <div style={styles.avatar}>
-              {user.name[0] || user.email[0] || "U".charAt(0).toUpperCase}
+              {user.name ? user.name.charAt(0).toUpperCase() : "U"}
               {/* Shows first letter of name */}
             </div>
 
@@ -181,7 +181,7 @@ function Header() {
             </div>
           </div>
         ) : (
-          <div className={styles.authButtons}>
+          <div style={styles.authButtons}>
             <Link to="/login">
               <button
                 id="login"

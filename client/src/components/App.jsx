@@ -55,9 +55,9 @@ function App() {
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/my-learning" element={<MyLearning />} />
             </Route>
-            <Route path="/ai=teacher" element={<AITeacher />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/ai-teacher" element={<AITeacher />} />
           </Routes>
         </div>
       </BrowserRouter>
