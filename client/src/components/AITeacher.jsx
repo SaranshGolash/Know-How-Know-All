@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import Webcam from "react-webcam";
 import { useLocation, useNavigate } from "react-router-dom";
 
-// --- ICONS (Simple SVGs) ---
+// --- ICONS ---
 const MicIcon = () => (
   <svg
     width="24"
@@ -57,81 +57,138 @@ function AITeacher() {
 
   // --- HOOKS ---
   const webcamRef = useRef(null);
+  const aiVideoRef = useRef(null);
   const ws = useRef(null);
   const recognition = useRef(null);
 
   // --- STATE ---
-  const [aiState, setAiState] = useState("idle"); // idle, listening, thinking, speaking
+  const [aiState, setAiState] = useState("idle");
   const [aiMessage, setAiMessage] = useState("Hello! I am ready to teach.");
-  const [isAutoMode, setIsAutoMode] = useState(false); // Live Monitor Toggle
+  const [isAutoMode, setIsAutoMode] = useState(false);
   const [transcript, setTranscript] = useState("");
 
-  // --- 1. SETUP WEBSOCKET & SPEECH ---
+  // --- 1. ROBUST WEBSOCKET SETUP ---
   useEffect(() => {
     if (!course) return;
 
-    // A. Connect to Backend
-    ws.current = new WebSocket("ws://localhost:8080");
+    // Prevent double connections in Strict Mode
+    if (ws.current) return;
 
-    ws.current.onopen = () => {
+    console.log("🔌 Connecting to WebSocket...");
+    const socket = new WebSocket("ws://localhost:8080");
+    ws.current = socket;
+
+    socket.onopen = () => {
       console.log("✅ WebSocket Connected");
-      ws.current.send(
-        JSON.stringify({ type: "init", courseTitle: course.course_title })
-      );
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(
+          JSON.stringify({ type: "init", courseTitle: course.course_title })
+        );
+      }
     };
 
-    ws.current.onmessage = (event) => {
+    socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === "ai_response" || data.type === "ready") {
-        setAiState("speaking");
         setAiMessage(data.text);
         speak(data.text);
       }
     };
 
-    // B. Setup Speech Recognition (Browser Native)
+    socket.onerror = (error) => {
+      console.error("❌ WebSocket Error:", error);
+    };
+
+    socket.onclose = () => {
+      console.log("🔌 WebSocket Disconnected");
+    };
+
+    // Initialize Speech Recognition
     if ("webkitSpeechRecognition" in window) {
       const SpeechRecognition = window.webkitSpeechRecognition;
       recognition.current = new SpeechRecognition();
       recognition.current.continuous = false;
-      recognition.current.interimResults = false;
       recognition.current.lang = "en-US";
-
       recognition.current.onresult = (event) => {
         const text = event.results[0][0].transcript;
         setTranscript(text);
-        handleSend(text); // Auto-send when speaking stops
+        handleSend(text);
       };
     }
 
+    // Cleanup function
     return () => {
-      if (ws.current) ws.current.close();
+      if (
+        socket.readyState === WebSocket.OPEN ||
+        socket.readyState === WebSocket.CONNECTING
+      ) {
+        socket.close();
+      }
+      ws.current = null; // Reset ref
       window.speechSynthesis.cancel();
       if (isAutoMode) clearInterval(autoInterval.current);
     };
-  }, [course]);
+  }, [course]); // Run once per course load
 
-  // --- 2. AUTO MODE (Adaptive Learning) ---
+  // --- 2. ROBUST VIDEO HANDLING ---
+  useEffect(() => {
+    const video = aiVideoRef.current;
+    if (!video) return;
+
+    const newSrc =
+      aiState === "speaking" ? "/videos/ai-talking.mp4" : "/videos/ai-idle.mp4";
+
+    // Only change source if it's actually different (Prevents interruption errors)
+    if (!video.src.includes(newSrc)) {
+      video.src = newSrc;
+      video.load(); // Explicitly load new source
+    }
+
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((error) => {
+        // Ignore "AbortError" (happens when swapping videos fast)
+        if (error.name !== "AbortError") {
+          console.log("Autoplay prevented:", error);
+        }
+      });
+    }
+  }, [aiState]);
+
+  // --- 3. SPEECH & CORE LOGIC ---
+  const speak = (text) => {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    // Choose voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice =
+      voices.find((v) => v.name.includes("Google US English")) || voices[0];
+    if (preferredVoice) utterance.voice = preferredVoice;
+
+    utterance.onstart = () => setAiState("speaking");
+    utterance.onend = () => setAiState("idle");
+
+    window.speechSynthesis.speak(utterance);
+  };
+
   const autoInterval = useRef(null);
   useEffect(() => {
     if (isAutoMode) {
-      setAiMessage("I am watching you work...");
+      setAiMessage("Watching you work...");
       autoInterval.current = setInterval(() => {
         captureAndSend(
-          "I am currently working on this. Does it look right? If not, guide me."
+          "I am currently working on this. Briefly guide me if I'm wrong."
         );
-      }, 8000); // Check every 8 seconds
+      }, 8000);
     } else {
       clearInterval(autoInterval.current);
-      setAiMessage("Auto-mode off. Click microphone to speak.");
     }
     return () => clearInterval(autoInterval.current);
   }, [isAutoMode]);
 
-  // --- 3. CORE FUNCTIONS ---
   const captureAndSend = useCallback((promptText) => {
     if (webcamRef.current && ws.current?.readyState === WebSocket.OPEN) {
-      setAiState("thinking");
       const imageSrc = webcamRef.current.getScreenshot();
       if (imageSrc) {
         const base64Data = imageSrc.split(",")[1];
@@ -153,268 +210,143 @@ function AITeacher() {
 
   const startListening = () => {
     if (recognition.current) {
+      setAiState("listening");
       try {
-        setAiState("listening");
         recognition.current.start();
       } catch (e) {
-        console.log("Already listening");
+        console.log("Already started");
       }
-    } else {
-      alert("Speech recognition not supported in this browser.");
     }
   };
 
-  const speak = (text) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+  if (!course) return null;
 
-    // Attempt to select a better voice
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice =
-      voices.find((v) => v.name.includes("Google US English")) || voices[0];
-    if (preferredVoice) utterance.voice = preferredVoice;
-
-    utterance.onend = () => setAiState("idle");
-    window.speechSynthesis.speak(utterance);
-  };
-
-  // --- 4. SAFETY CHECK ---
-  if (!course) return null; // Or the error UI from before
-
-  // --- 5. MODERN STYLES ---
+  // --- STYLES ---
   const styles = {
     page: {
       height: "100vh",
       width: "100vw",
-      background: "#0f0f13", // Deep dark background
-      color: "#fff",
+      background: "#000",
+      display: "flex",
+      flexDirection: "row",
+      overflow: "hidden",
+    },
+    studentSection: {
+      flex: 1,
+      position: "relative",
+      borderRight: "2px solid #333",
+    },
+    webcam: { width: "100%", height: "100%", objectFit: "cover" },
+    aiSection: {
+      flex: 1,
+      position: "relative",
+      background: "#111",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      fontFamily: "'Inter', sans-serif",
-      overflow: "hidden",
-      position: "relative",
     },
-    // The Main Video Feed (You)
-    videoContainer: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      zIndex: 1,
-    },
-    webcam: {
+    aiVideo: {
       width: "100%",
       height: "100%",
       objectFit: "cover",
-      opacity: 0.6, // Slight dim to make UI pop
+      position: "absolute",
+      top: 0,
+      left: 0,
+      opacity: 0.8,
     },
-    // The AI HUD (Heads Up Display)
     hud: {
       position: "absolute",
-      zIndex: 10,
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      padding: "40px",
-      boxSizing: "border-box",
-    },
-    header: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    badge: {
-      background: "rgba(46, 79, 33, 0.8)",
-      padding: "8px 16px",
-      borderRadius: "20px",
+      bottom: "40px",
+      width: "90%",
+      background: "rgba(0,0,0,0.8)",
+      padding: "20px",
+      borderRadius: "16px",
       backdropFilter: "blur(10px)",
-      border: "1px solid rgba(160, 241, 189, 0.3)",
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      fontWeight: "600",
-    },
-    // The AI Avatar Core
-    aiCoreContainer: {
+      border: "1px solid #333",
       display: "flex",
       flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      marginTop: "50px", // Push down a bit
-    },
-    aiCore: {
-      width: "120px",
-      height: "120px",
-      borderRadius: "50%",
-      background:
-        aiState === "speaking"
-          ? "radial-gradient(circle, #a0f1bd 0%, #2E4F21 100%)" // Active Green
-          : aiState === "thinking"
-          ? "radial-gradient(circle, #f1e0a0 0%, #cf8b13 100%)" // Thinking Orange
-          : "radial-gradient(circle, #333 0%, #000 100%)", // Idle Dark
-      boxShadow:
-        aiState === "speaking"
-          ? "0 0 50px #a0f1bd"
-          : "0 0 20px rgba(255,255,255,0.1)",
-      transition: "all 0.5s ease",
-      animation: aiState === "speaking" ? "pulse 1.5s infinite" : "none",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "40px",
+      gap: "15px",
+      zIndex: 10,
     },
     aiText: {
-      marginTop: "20px",
-      background: "rgba(0,0,0,0.6)",
-      padding: "15px 30px",
-      borderRadius: "12px",
-      maxWidth: "600px",
-      textAlign: "center",
-      lineHeight: "1.6",
-      backdropFilter: "blur(5px)",
-      borderLeft: "4px solid #a0f1bd",
-      minHeight: "60px",
-      transition: "all 0.3s ease",
+      color: "#a0f1bd",
+      fontSize: "18px",
+      lineHeight: "1.5",
+      maxHeight: "100px",
+      overflowY: "auto",
     },
-    // Bottom Controls
-    controlBar: {
-      display: "flex",
-      gap: "20px",
-      background: "rgba(255,255,255,0.1)",
-      padding: "15px 30px",
-      borderRadius: "40px",
-      backdropFilter: "blur(12px)",
-      border: "1px solid rgba(255,255,255,0.1)",
-      marginBottom: "20px",
-      alignSelf: "center",
-    },
+    controls: { display: "flex", gap: "15px", justifyContent: "center" },
     btn: {
-      background: "transparent",
+      background: "rgba(255,255,255,0.1)",
       border: "none",
       color: "#fff",
-      cursor: "pointer",
-      padding: "12px",
+      padding: "15px",
       borderRadius: "50%",
+      cursor: "pointer",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      transition: "background 0.2s",
     },
-    btnActive: {
-      background: "#2E4F21",
-      color: "#a0f1bd",
-    },
-    btnEnd: {
-      background: "#ff4d4d",
-      color: "#fff",
-      marginLeft: "20px",
-    },
+    activeBtn: { background: "#2E4F21", color: "#a0f1bd" },
+    endBtn: { background: "#d93025" },
   };
 
   return (
     <div style={styles.page}>
-      {/* Background Video Feed */}
-      <div style={styles.videoContainer}>
+      <div style={styles.studentSection}>
         <Webcam
           audio={false}
           ref={webcamRef}
           screenshotFormat="image/jpeg"
           style={styles.webcam}
         />
-      </div>
-
-      {/* Foreground HUD */}
-      <div style={styles.hud}>
-        {/* Top Header */}
-        <div style={styles.header}>
-          <div style={styles.badge}>
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                background: "#a0f1bd",
-                borderRadius: "50%",
-              }}
-            ></span>
-            {course.course_title}
-          </div>
-          <div
-            style={{
-              ...styles.badge,
-              background: isAutoMode ? "#2E4F21" : "rgba(0,0,0,0.5)",
-            }}
-          >
-            {isAutoMode ? "👁️ Adaptive Mode: ON" : "Adaptive Mode: OFF"}
-          </div>
+        <div
+          style={{
+            position: "absolute",
+            top: 20,
+            left: 20,
+            background: "rgba(0,0,0,0.6)",
+            padding: "5px 12px",
+            borderRadius: "20px",
+            color: "white",
+            fontSize: "12px",
+          }}
+        >
+          YOU
         </div>
-
-        {/* Center AI Core */}
-        <div style={styles.aiCoreContainer}>
-          <div style={styles.aiCore}>
-            {aiState === "listening"
-              ? "👂"
-              : aiState === "thinking"
-              ? "🧠"
-              : "🤖"}
-          </div>
+      </div>
+      <div style={styles.aiSection}>
+        <video ref={aiVideoRef} loop muted playsInline style={styles.aiVideo} />
+        <div style={styles.hud}>
           <div style={styles.aiText}>
-            {transcript ? (
-              <span style={{ color: "#aaa", fontStyle: "italic" }}>
-                "{transcript}"
-              </span>
-            ) : null}
-            <br />
-            <strong>AI: </strong> {aiMessage}
+            <strong>AI Teacher:</strong> {aiMessage}
+          </div>
+          <div style={styles.controls}>
+            <button
+              style={{ ...styles.btn, ...(isAutoMode ? styles.activeBtn : {}) }}
+              onClick={() => setIsAutoMode(!isAutoMode)}
+            >
+              <CamIcon />
+            </button>
+            <button
+              style={{
+                ...styles.btn,
+                ...(aiState === "listening" ? styles.activeBtn : {}),
+              }}
+              onClick={startListening}
+            >
+              <MicIcon />
+            </button>
+            <button
+              style={{ ...styles.btn, ...styles.endBtn }}
+              onClick={() => navigate("/my-learning")}
+            >
+              <PhoneIcon />
+            </button>
           </div>
         </div>
-
-        {/* Bottom Controls */}
-        <div style={styles.controlBar}>
-          {/* 1. Toggle Auto-Mode */}
-          <button
-            style={{ ...styles.btn, ...(isAutoMode ? styles.btnActive : {}) }}
-            onClick={() => setIsAutoMode(!isAutoMode)}
-            title="Toggle Live Monitor"
-          >
-            <CamIcon />
-          </button>
-
-          {/* 2. Speak to AI */}
-          <button
-            style={{
-              ...styles.btn,
-              ...(aiState === "listening" ? styles.btnActive : {}),
-            }}
-            onClick={startListening}
-            title="Speak to AI"
-          >
-            <MicIcon />
-          </button>
-
-          {/* 3. End Call */}
-          <button
-            style={{ ...styles.btn, ...styles.btnEnd }}
-            onClick={() => navigate("/my-learning")}
-            title="End Class"
-          >
-            <PhoneIcon />
-          </button>
-        </div>
       </div>
-
-      {/* CSS Animation for Pulse */}
-      <style>{`
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(160, 241, 189, 0.7); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(160, 241, 189, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(160, 241, 189, 0); }
-        }
-      `}</style>
     </div>
   );
 }

@@ -5,8 +5,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { WebSocketServer } = require("ws");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 const PORT = 5000;
@@ -207,7 +207,7 @@ const wss = new WebSocketServer({ port: 8080 });
 wss.on("connection", (ws) => {
   console.log("Client connected to AI Teacher");
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-pro-latest" });
   let chatSession = null;
 
   ws.on("message", async (message) => {
@@ -222,14 +222,14 @@ wss.on("connection", (ws) => {
               role: "user",
               parts: [
                 {
-                  text: `You are an expert AI Tutor for the course: ${data.courseTitle}. 
-                
-                Your Goal:
-                1. Observe the student's video feed (they might show code, diagrams, or their face).
-                2. If they are struggling, offer hints.
-                3. If they ask a question, answer concisely.
-                4. Keep responses short and conversational (under 2 sentences) because you will be speaking them out loud.
-                `,
+                  text: `You are an AI Video Tutor for: ${data.courseTitle}. 
+                    
+                    IMPORTANT INSTRUCTIONS:
+                    1. You are speaking in a video call. Keep answers SHORT and conversational (1-2 sentences).
+                    2. Do not use markdown (no **bold** or # headings), just plain text.
+                    3. If the user shows code, correct it briefly.
+                    4. Be encouraging and energetic.
+                    `,
                 },
               ],
             },
