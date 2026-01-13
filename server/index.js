@@ -241,22 +241,47 @@ wss.on("connection", (ws) => {
       }
 
       // Handle Live Frame/Audio Data
-      else if (data.type === "stream" && chatSession) {
-        // data.image should be a base64 string of the webcam frame
-        // data.text (optional) could be speech-to-text input
+      else if (
+        (data.type === "stream" || data.type === "quiz") &&
+        chatSession
+      ) {
+        let promptText = data.prompt;
 
+        // 1. If it's a Quiz Request, force JSON format
+        if (data.type === "quiz") {
+          promptText = `Generate 3 multiple-choice questions about ${data.courseTitle}. 
+            CRITICAL: Return ONLY a raw JSON array. No markdown code blocks. No intro text.
+            Format: [{"id": 1, "question": "...", "options": ["A", "B", "C", "D"], "answer": "The correct string"}]`;
+        }
+
+        // 2. Send to Gemini
         const result = await chatSession.sendMessage([
-          {
-            text:
-              "Analyze this frame from my webcam and my question: " +
-              (data.prompt || "What am I showing you/What should I do next?"),
-          },
-          { inlineData: { mimeType: "image/jpeg", data: data.image } },
+          { text: promptText },
+          // Only attach image if provided (quizzes usually don't need the camera)
+          ...(data.image
+            ? [{ inlineData: { mimeType: "image/jpeg", data: data.image } }]
+            : []),
         ]);
 
-        const responseText = result.response.text();
+        let responseText = result.response.text();
 
-        ws.send(JSON.stringify({ type: "ai_response", text: responseText }));
+        // 3. Clean up Gemini's response (It often wraps JSON in ```json ... ```)
+        if (data.type === "quiz") {
+          responseText = responseText
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
+          // Send back as a special 'quiz_data' type
+          ws.send(
+            JSON.stringify({
+              type: "quiz_data",
+              data: JSON.parse(responseText),
+            })
+          );
+        } else {
+          // Standard chat response
+          ws.send(JSON.stringify({ type: "ai_response", text: responseText }));
+        }
       }
     } catch (error) {
       console.error("AI Error:", error);

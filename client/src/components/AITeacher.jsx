@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import Webcam from "react-webcam";
 import { useLocation, useNavigate } from "react-router-dom";
+import QuizModal from "./OuizModal"; // ✅ IMPORT ADDED
 
 // --- ICONS ---
 const MicIcon = () => (
@@ -49,6 +50,25 @@ const PhoneIcon = () => (
     <path d="M10.68 13.31a16 16 0 0 0 6.9 6.9l2.2-2.2a2 2 0 0 1 2.11-.45 16.74 16.74 0 0 0 5.06 1.69 2 2 0 0 1 1.76 2.07v3.25a2 2 0 0 1-2.08 2.08 17 17 0 0 1-15-15A2 2 0 0 1 4.7 2h3.25a2 2 0 0 1 2.07 1.76 16.74 16.74 0 0 0 1.69 5.06 2 2 0 0 1-.45 2.11z"></path>
   </svg>
 );
+// ✅ QUIZ ICON ADDED
+const QuizIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <polyline points="10 9 9 9 8 9"></polyline>
+  </svg>
+);
 
 function AITeacher() {
   const location = useLocation();
@@ -67,11 +87,13 @@ function AITeacher() {
   const [isAutoMode, setIsAutoMode] = useState(false);
   const [transcript, setTranscript] = useState("");
 
-  // --- 1. ROBUST WEBSOCKET SETUP ---
+  // ✅ QUIZ STATE VARIABLES ADDED
+  const [quizData, setQuizData] = useState(null);
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
+
+  // --- 1. WEBSOCKET SETUP ---
   useEffect(() => {
     if (!course) return;
-
-    // Prevent double connections in Strict Mode
     if (ws.current) return;
 
     console.log("🔌 Connecting to WebSocket...");
@@ -89,19 +111,22 @@ function AITeacher() {
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
+
+      // Handle Standard Response
       if (data.type === "ai_response" || data.type === "ready") {
         setAiMessage(data.text);
         speak(data.text);
+        setIsLoadingQuiz(false); // Stop loading if AI talks instead of quitting
+      }
+      // ✅ Handle Quiz Data
+      else if (data.type === "quiz_data") {
+        setQuizData(data.data);
+        setIsLoadingQuiz(false);
+        setAiMessage("I've prepared a quiz for you. Good luck!");
       }
     };
 
-    socket.onerror = (error) => {
-      console.error("❌ WebSocket Error:", error);
-    };
-
-    socket.onclose = () => {
-      console.log("🔌 WebSocket Disconnected");
-    };
+    socket.onerror = (error) => console.error("❌ WebSocket Error:", error);
 
     // Initialize Speech Recognition
     if ("webkitSpeechRecognition" in window) {
@@ -116,41 +141,29 @@ function AITeacher() {
       };
     }
 
-    // Cleanup function
     return () => {
-      if (
-        socket.readyState === WebSocket.OPEN ||
-        socket.readyState === WebSocket.CONNECTING
-      ) {
-        socket.close();
-      }
-      ws.current = null; // Reset ref
+      if (socket.readyState === WebSocket.OPEN) socket.close();
+      ws.current = null;
       window.speechSynthesis.cancel();
       if (isAutoMode) clearInterval(autoInterval.current);
     };
-  }, [course]); // Run once per course load
+  }, [course]);
 
-  // --- 2. ROBUST VIDEO HANDLING ---
+  // --- 2. VIDEO HANDLING ---
   useEffect(() => {
     const video = aiVideoRef.current;
     if (!video) return;
-
     const newSrc =
       aiState === "speaking" ? "/videos/ai-talking.mp4" : "/videos/ai-idle.mp4";
-
-    // Only change source if it's actually different (Prevents interruption errors)
     if (!video.src.includes(newSrc)) {
       video.src = newSrc;
-      video.load(); // Explicitly load new source
+      video.load();
     }
-
     const playPromise = video.play();
     if (playPromise !== undefined) {
       playPromise.catch((error) => {
-        // Ignore "AbortError" (happens when swapping videos fast)
-        if (error.name !== "AbortError") {
+        if (error.name !== "AbortError")
           console.log("Autoplay prevented:", error);
-        }
       });
     }
   }, [aiState]);
@@ -159,16 +172,12 @@ function AITeacher() {
   const speak = (text) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-
-    // Choose voice
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice =
       voices.find((v) => v.name.includes("Google US English")) || voices[0];
     if (preferredVoice) utterance.voice = preferredVoice;
-
     utterance.onstart = () => setAiState("speaking");
     utterance.onend = () => setAiState("idle");
-
     window.speechSynthesis.speak(utterance);
   };
 
@@ -216,6 +225,20 @@ function AITeacher() {
       } catch (e) {
         console.log("Already started");
       }
+    }
+  };
+
+  // ✅ NEW FUNCTION: Start Quiz
+  const startQuiz = () => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      setAiMessage("Generating a unique quiz for you...");
+      setIsLoadingQuiz(true);
+      ws.current.send(
+        JSON.stringify({
+          type: "quiz",
+          courseTitle: course.course_title,
+        })
+      );
     }
   };
 
@@ -294,6 +317,11 @@ function AITeacher() {
 
   return (
     <div style={styles.page}>
+      {/* ✅ QUIZ MODAL */}
+      {quizData && (
+        <QuizModal questions={quizData} onClose={() => setQuizData(null)} />
+      )}
+
       <div style={styles.studentSection}>
         <Webcam
           audio={false}
@@ -316,6 +344,7 @@ function AITeacher() {
           YOU
         </div>
       </div>
+
       <div style={styles.aiSection}>
         <video ref={aiVideoRef} loop muted playsInline style={styles.aiVideo} />
         <div style={styles.hud}>
@@ -338,6 +367,19 @@ function AITeacher() {
             >
               <MicIcon />
             </button>
+
+            {/* ✅ QUIZ BUTTON */}
+            <button
+              style={{
+                ...styles.btn,
+                ...(isLoadingQuiz ? styles.activeBtn : {}),
+              }}
+              onClick={startQuiz}
+              title="Take a Quiz"
+            >
+              {isLoadingQuiz ? "..." : <QuizIcon />}
+            </button>
+
             <button
               style={{ ...styles.btn, ...styles.endBtn }}
               onClick={() => navigate("/my-learning")}
