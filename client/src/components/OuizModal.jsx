@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import confetti from "canvas-confetti";
 
 function QuizModal({ questions, onClose }) {
+  const { user } = useContext(AuthContext);
   const [currentQ, setCurrentQ] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [xpEarned, setXpEarned] = useState(0);
 
   const handleAnswer = (option) => {
     if (option === questions[currentQ].answer) {
@@ -12,10 +15,32 @@ function QuizModal({ questions, onClose }) {
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); // 🎉
     }
 
+    const finishQuiz = async () => {
+      setShowResult(true);
+      const finalScore =
+        score +
+        (questions[currentQ].answer === questions[currentQ].options ? 1 : 0);
+      const xpToAward = 100;
+      setXpEarned(xpToAward);
+
+      if (user?.id) {
+        try {
+          await fetch("http://localhost:5000/user/add-xp", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id, xp: xpToAward }),
+          });
+          console.log("XP Updated!");
+        } catch (e) {
+          console.error("Failed to add XP", e);
+        }
+      }
+    };
+
     if (currentQ + 1 < questions.length) {
       setCurrentQ(currentQ + 1);
     } else {
-      setShowResult(true);
+      finishQuiz();
     }
   };
 
@@ -77,6 +102,18 @@ function QuizModal({ questions, onClose }) {
             <p style={{ fontSize: "24px" }}>
               You scored {score} / {questions.length}
             </p>
+            <div
+              style={{
+                background: "#2E4F21",
+                color: "#fff",
+                padding: "10px",
+                borderRadius: "8px",
+                margin: "15px 0",
+                fontWeight: "bold",
+              }}
+            >
+              🌟 +{xpEarned} XP Earned!
+            </div>
             <button
               style={{ ...styles.optionBtn, background: "#2E4F21" }}
               onClick={onClose}
