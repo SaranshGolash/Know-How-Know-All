@@ -207,7 +207,7 @@ const wss = new WebSocketServer({ port: 8080 });
 wss.on("connection", (ws) => {
   console.log("Client connected to AI Teacher");
 
-  const model = genAI.getGenerativeModel({ model: "gemini-pro-latest" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
   let chatSession = null;
 
   ws.on("message", async (message) => {

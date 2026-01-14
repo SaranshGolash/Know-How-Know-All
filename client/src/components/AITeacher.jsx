@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import Webcam from "react-webcam";
 import { useLocation, useNavigate } from "react-router-dom";
-import QuizModal from "./OuizModal"; // ✅ IMPORT ADDED
+import QuizModal from "./OuizModal";
+import CodeEditor from "./CodeEditor";
 
-// --- ICONS ---
+// ICONS
 const MicIcon = () => (
   <svg
     width="24"
@@ -70,6 +71,22 @@ const QuizIcon = () => (
   </svg>
 );
 
+const CodeIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="16 18 22 12 16 6"></polyline>
+    <polyline points="8 6 2 12 8 18"></polyline>
+  </svg>
+);
+
 function AITeacher() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -86,12 +103,13 @@ function AITeacher() {
   const [aiMessage, setAiMessage] = useState("Hello! I am ready to teach.");
   const [isAutoMode, setIsAutoMode] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const [showCode, setShowCode] = useState(false);
 
-  // ✅ QUIZ STATE VARIABLES ADDED
+  // QUIZ STATE VARIABLES
   const [quizData, setQuizData] = useState(null);
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
 
-  // --- 1. WEBSOCKET SETUP ---
+  // WEBSOCKET SETUP
   useEffect(() => {
     if (!course) return;
     if (ws.current) return;
@@ -118,7 +136,7 @@ function AITeacher() {
         speak(data.text);
         setIsLoadingQuiz(false); // Stop loading if AI talks instead of quitting
       }
-      // ✅ Handle Quiz Data
+      // Handle Quiz Data
       else if (data.type === "quiz_data") {
         setQuizData(data.data);
         setIsLoadingQuiz(false);
@@ -149,7 +167,7 @@ function AITeacher() {
     };
   }, [course]);
 
-  // --- 2. VIDEO HANDLING ---
+  // VIDEO HANDLING
   useEffect(() => {
     const video = aiVideoRef.current;
     if (!video) return;
@@ -228,7 +246,7 @@ function AITeacher() {
     }
   };
 
-  // ✅ NEW FUNCTION: Start Quiz
+  // Start Quiz Function
   const startQuiz = () => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       setAiMessage("Generating a unique quiz for you...");
@@ -244,7 +262,7 @@ function AITeacher() {
 
   if (!course) return null;
 
-  // --- STYLES ---
+  // STYLES
   const styles = {
     page: {
       height: "100vh",
@@ -317,32 +335,61 @@ function AITeacher() {
 
   return (
     <div style={styles.page}>
-      {/* ✅ QUIZ MODAL */}
+      {/* QUIZ MODAL */}
       {quizData && (
         <QuizModal questions={quizData} onClose={() => setQuizData(null)} />
       )}
 
       <div style={styles.studentSection}>
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          style={styles.webcam}
-        />
+        {/* The Webcam (Always rendered, just hidden visually when coding) */}
         <div
           style={{
+            width: "100%",
+            height: "100%",
             position: "absolute",
-            top: 20,
-            left: 20,
-            background: "rgba(0,0,0,0.6)",
-            padding: "5px 12px",
-            borderRadius: "20px",
-            color: "white",
-            fontSize: "12px",
+            top: 0,
+            left: 0, // Ensure it fills space
+            visibility: showCode ? "hidden" : "visible", // Hide but keep active
           }}
         >
-          YOU
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            style={styles.webcam}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: 20,
+              left: 20,
+              background: "rgba(0,0,0,0.6)",
+              padding: "5px 12px",
+              borderRadius: "20px",
+              color: "white",
+              fontSize: "12px",
+            }}
+          >
+            YOU
+          </div>
         </div>
+
+        {/* The Code Editor ( overlaid on top ) */}
+        {showCode && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: 50, // Force it on top of webcam
+              background: "#1e1e1e",
+            }}
+          >
+            <CodeEditor onClose={() => setShowCode(false)} />
+          </div>
+        )}
       </div>
 
       <div style={styles.aiSection}>
@@ -358,6 +405,14 @@ function AITeacher() {
             >
               <CamIcon />
             </button>
+            {/* Code Button */}
+            <button
+              style={{ ...styles.btn, ...(showCode ? styles.activeBtn : {}) }}
+              onClick={() => setShowCode(!showCode)}
+              title="Open Code Playground"
+            >
+              <CodeIcon />
+            </button>
             <button
               style={{
                 ...styles.btn,
@@ -368,7 +423,7 @@ function AITeacher() {
               <MicIcon />
             </button>
 
-            {/* ✅ QUIZ BUTTON */}
+            {/* QUIZ BUTTON */}
             <button
               style={{
                 ...styles.btn,
