@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
@@ -7,6 +7,16 @@ function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoginHover, setIsLoginHover] = useState(false);
   const [isSignupHover, setIsSignupHover] = useState(false);
+  const [stats, setStats] = useState({ level: 1, xp: 0 });
+
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`http://localhost:5000/user/stats/${user.id}`)
+        .then((res) => res.json())
+        .then((data) => setStats(data))
+        .catch((err) => console.error("Error fetching stats:", err));
+    }
+  }, [user]);
 
   const styles = {
     header: {
@@ -117,6 +127,19 @@ function Header() {
       cursor: "pointer",
       transition: "background 0.2s",
     },
+    levelBadge: {
+      background: "linear-gradient(45deg, #FFD700, #FFA500)", // Gold gradient
+      color: "#000",
+      padding: "5px 12px",
+      borderRadius: "15px",
+      fontSize: "12px",
+      fontWeight: "800",
+      marginRight: "15px",
+      boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+      display: "flex",
+      alignItems: "center",
+      gap: "5px",
+    },
   };
 
   return (
@@ -145,38 +168,43 @@ function Header() {
 
         {/* Buttons */}
         {user ? (
-          // OPTION A: If Logged In -> Show User Avatar
-          <div
-            style={styles.userContainer}
-            onClick={() => setShowDropdown(!showDropdown)}
-          >
-            <div style={styles.avatar}>
-              {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-              {/* Shows first letter of name */}
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {/* ✅ 5. SHOW LEVEL BADGE HERE */}
+            <div style={styles.levelBadge} title={`${stats.xp} XP Points`}>
+              ⚡ LVL {stats.level}
             </div>
+            <div
+              style={styles.userContainer}
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              <div style={styles.avatar}>
+                {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                {/* Shows first letter of name */}
+              </div>
 
-            {/* Dropdown Menu */}
-            <div style={styles.dropdownMenu}>
-              <span
-                style={{
-                  ...styles.dropdownItem,
-                  fontWeight: "bold",
-                  borderBottom: "1px solid #eee",
-                }}
-              >
-                My Profile
-              </span>
-              <Link to="/my-learning" style={styles.dropdownItem}>
-                My Learning
-              </Link>
-              <Link to="/settings" style={styles.dropdownItem}>
-                Settings
-              </Link>
-              <div
-                style={{ ...styles.dropdownItem, color: "red" }}
-                onClick={logout} // Call Logout from Context
-              >
-                Logout
+              {/* Dropdown Menu */}
+              <div style={styles.dropdownMenu}>
+                <span
+                  style={{
+                    ...styles.dropdownItem,
+                    fontWeight: "bold",
+                    borderBottom: "1px solid #eee",
+                  }}
+                >
+                  My Profile
+                </span>
+                <Link to="/my-learning" style={styles.dropdownItem}>
+                  My Learning
+                </Link>
+                <Link to="/settings" style={styles.dropdownItem}>
+                  Settings
+                </Link>
+                <div
+                  style={{ ...styles.dropdownItem, color: "red" }}
+                  onClick={logout} // Call Logout from Context
+                >
+                  Logout
+                </div>
               </div>
             </div>
           </div>

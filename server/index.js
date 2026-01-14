@@ -19,7 +19,7 @@ app.use(express.json());
 
 // AUTHENTICATION ROUTES
 
-// SIGNUP ROUTE
+// Signup Route
 app.post("/auth/signup", async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
@@ -58,7 +58,7 @@ app.post("/auth/signup", async (req, res) => {
   }
 });
 
-// LOGIN ROUTE
+// Login route
 app.post("/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -191,6 +191,50 @@ app.get("/user/purchases/:userId", async (req, res) => {
       [userId]
     );
     res.json(purchases.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// GAMIFICATION ENDPOINTS
+
+// Getting User Stats (XP & Streak)
+
+app.get("/user/stats/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await pool.query(
+      "SELECT xp_points, current_streak FROM users WHERE user_id = $1",
+      [id]
+    );
+
+    if (user.rows.length === 0) return res.json({ xp: 0, streak: 0 });
+
+    // Calculate Level: Level 1 = 0-99XP, Level 2 = 100-199XP, etc.
+    const xp = user.rows[0].xp_points;
+    const level = Math.floor(xp / 100) + 1;
+
+    res.json({ xp, level, streak: user.rows[0].current_streak });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Adding XP when user wins the quiz
+
+app.put("/user/add-xp", async (req, res) => {
+  try {
+    const { userId, xp } = req.body;
+
+    // Update XP in DB
+    const update = await pool.query(
+      "UPDATE users SET xp_points = xp_points + $1 WHERE user_id = $2 RETURNING xp_points",
+      [xp, userId]
+    );
+
+    res.json({ message: "XP Added", newXP: update.rows[0].xp_points });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
