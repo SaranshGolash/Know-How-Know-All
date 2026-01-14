@@ -14,3 +14,6 @@ CREATE TABLE purchases (
     payment_status VARCHAR(50) DEFAULT 'completed',
     purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE users ADD COLUMN xp_points INT DEFAULT 0;
+ALTER TABLE users ADD COLUMN current_streak INT DEFAULT 0;
