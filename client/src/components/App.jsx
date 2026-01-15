@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
+import ChatWidget from "./ChatWidget";
 import HeroSection from "./HeroSection";
 import Services from "./Services";
 import ExploreMore from "./ExploreMore";
@@ -25,6 +26,7 @@ function MainLayout() {
       <Outlet />
       {/* This is where the child route (About, Services etc) renders */}
       <Footer />
+      <ChatWidget />
     </>
   );
 }
