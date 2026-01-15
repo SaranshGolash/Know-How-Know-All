@@ -245,6 +245,20 @@ app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+// Leaderboard Route
+
+app.get("/leaderboard", async (req, res) => {
+  try {
+    const leaderboard = await pool.query(
+      "SELECT full_name, xp_points, current_streak FROM users ORDER BY xp_points DESC LIMIT 10"
+    );
+    res.json(leaderboard.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 // WEBSOCKET SERVER (For AI Teacher)
 const wss = new WebSocketServer({ port: 8080 });
 
