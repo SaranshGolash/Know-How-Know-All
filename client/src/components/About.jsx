@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { ThemeContext } from "../context/Theme";
 
 function About() {
+  const { theme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
+
   // Responsive State Logic
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -13,6 +17,10 @@ function About() {
   const isMobile = windowWidth <= 600;
   const isTablet = windowWidth <= 1024;
 
+  // Dynamic Colors
+  const accentColor = isDark ? "#a0f1bd" : "#2E4F21";
+  const textColor = isDark ? "#ccc" : "#555";
+
   // Styling
   const styles = {
     container: {
@@ -22,9 +30,10 @@ function About() {
       width: "100%",
       maxWidth: "1280px",
       margin: "0 auto",
-      background: "#f9f9f9",
+      background: isDark ? "#121212" : "#f9f9f9",
       padding: isMobile ? "40px 20px" : "80px 40px",
       boxSizing: "border-box",
+      transition: "background 0.3s ease",
     },
 
     // --- Hero Section ---
@@ -46,21 +55,21 @@ function About() {
     h1: {
       fontSize: isMobile ? "36px" : "48px",
       fontWeight: "800",
-      color: "#2E4F21",
+      color: accentColor,
       lineHeight: "1.2",
       margin: 0,
     },
     heroP: {
       fontSize: "18px",
       lineHeight: "1.6",
-      color: "#555",
+      color: textColor,
     },
     heroImage: {
       flex: 1,
       width: "100%",
       maxWidth: "500px",
       height: "350px",
-      backgroundColor: "#a0f1bd",
+      backgroundColor: isDark ? "#1b2e13" : "#a0f1bd",
       borderRadius: "20px",
       display: "flex",
       alignItems: "center",
@@ -75,11 +84,12 @@ function About() {
       flexDirection: isMobile ? "column" : "row",
       justifyContent: "space-around",
       width: "100%",
-      backgroundColor: "#2E4F21",
+      backgroundColor: "#2E4F21", // Keep brand green in both modes for impact
       borderRadius: "16px",
       padding: "60px 40px",
       marginBottom: "100px",
       gap: isMobile ? "40px" : "0",
+      border: isDark ? "1px solid #a0f1bd" : "none", // Subtle border in dark mode
     },
     statItem: {
       display: "flex",
@@ -91,12 +101,13 @@ function About() {
     statNumber: {
       fontSize: "48px",
       fontWeight: "800",
-      color: "#a0f1bd",
+      color: "#a0f1bd", // Always Mint Green on top of Dark Green bg
     },
     statLabel: {
       fontSize: "16px",
       fontWeight: "500",
       opacity: 0.8,
+      color: "#fff",
     },
 
     // Values Section
@@ -110,7 +121,7 @@ function About() {
     sectionHeader: {
       fontSize: "36px",
       fontWeight: "700",
-      color: "#2E4F21",
+      color: accentColor,
       textAlign: "center",
     },
     valuesGrid: {
@@ -132,7 +143,7 @@ function About() {
         <div style={styles.heroText}>
           <span
             style={{
-              color: "#2E4F21",
+              color: accentColor,
               fontWeight: "bold",
               letterSpacing: "1px",
             }}
@@ -181,14 +192,17 @@ function About() {
           <ValueCard
             title="Zero Bias"
             desc="Our AI treats every student exactly the same, grading and teaching based purely on logic and performance."
+            isDark={isDark} // Pass theme prop
           />
           <ValueCard
             title="Infinite Patience"
             desc="Need to ask the same question 50 times? Go ahead. Our AI never gets frustrated, tired, or annoyed."
+            isDark={isDark}
           />
           <ValueCard
             title="Instant Evolution"
             desc="Traditional curriculums take years to update. Our AI updates its knowledge base instantly every single day."
+            isDark={isDark}
           />
         </div>
       </div>
@@ -196,12 +210,19 @@ function About() {
   );
 }
 
-function ValueCard({ title, desc }) {
+function ValueCard({ title, desc, isDark }) {
   const [hover, setHover] = useState(false);
 
+  const defaultBg = isDark ? "#1e1e1e" : "#d2f8dc";
+  const defaultText = isDark ? "#a0f1bd" : "#2E4F21";
+
+  // Hover Colors (Same for both modes - Brand Green background)
+  const hoverBg = "#2E4F21";
+  const hoverText = "#fff";
+
   const cardStyle = {
-    backgroundColor: hover ? "#2E4F21" : "#d2f8dc", // Light green to Dark green
-    color: hover ? "#fff" : "#2E4F21", // Dark text to White text
+    backgroundColor: hover ? hoverBg : defaultBg,
+    color: hover ? hoverText : defaultText,
     padding: "40px",
     borderRadius: "16px",
     display: "flex",
@@ -209,7 +230,12 @@ function ValueCard({ title, desc }) {
     gap: "16px",
     transition: "all 0.3s ease",
     cursor: "default",
-    boxShadow: hover ? "0 10px 30px rgba(46, 79, 33, 0.2)" : "none",
+    boxShadow: hover
+      ? isDark
+        ? "0 10px 30px rgba(0,0,0,0.5)"
+        : "0 10px 30px rgba(46, 79, 33, 0.2)"
+      : "none",
+    border: isDark && !hover ? "1px solid #333" : "none",
     transform: hover ? "translateY(-5px)" : "translateY(0)",
   };
 
@@ -225,6 +251,7 @@ function ValueCard({ title, desc }) {
           fontSize: "16px",
           lineHeight: "1.5",
           opacity: hover ? 0.9 : 0.8,
+          color: hover ? "#fff" : isDark ? "#ccc" : "#2E4F21",
         }}
       >
         {desc}
