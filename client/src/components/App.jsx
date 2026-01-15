@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -18,15 +18,24 @@ import Leaderboard from "./Leaderboard";
 import Login from "./Login";
 import Signup from "./Signup";
 import { AuthProvider } from "../context/AuthContext";
+import { ThemeContext, ThemeProvider } from "../context/Theme";
 
 function MainLayout() {
+  const { colors } = useContext(ThemeContext);
   return (
     <>
-      <Header />
-      <Outlet />
-      {/* This is where the child route (About, Services etc) renders */}
-      <Footer />
-      <ChatWidget />
+      <div
+        style={{
+          background: colors.bg,
+          minHeight: "100vh",
+          color: colors.text,
+        }}
+      >
+        <Header />
+        <Outlet />
+        <Footer />
+        <ChatWidget />
+      </div>
     </>
   );
 }
@@ -34,37 +43,39 @@ function MainLayout() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <div className="landing-page">
-          <Routes>
-            {/* Wrap pages that needs the Header and Footer inside the Layout */}
-            <Route element={<MainLayout />}>
-              <Route
-                path="/"
-                element={
-                  <>
-                    <HeroSection />
-                    <Services />
-                    <Testimonial />
-                    <HiringCompanies />
-                  </>
-                }
-              />
-              <Route path="/services" element={<Services />} />
-              <Route path="/explore" element={<ExploreMore />} />
-              <Route path="/cart" element={<AddToCart />} />
-              <Route path="/success" element={<Success />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/my-learning" element={<MyLearning />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
-            </Route>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/ai-teacher" element={<AITeacher />} />
-          </Routes>
-        </div>
-      </BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
+          <div className="landing-page">
+            <Routes>
+              {/* Wrap pages that needs the Header and Footer inside the Layout */}
+              <Route element={<MainLayout />}>
+                <Route
+                  path="/"
+                  element={
+                    <>
+                      <HeroSection />
+                      <Services />
+                      <Testimonial />
+                      <HiringCompanies />
+                    </>
+                  }
+                />
+                <Route path="/services" element={<Services />} />
+                <Route path="/explore" element={<ExploreMore />} />
+                <Route path="/cart" element={<AddToCart />} />
+                <Route path="/success" element={<Success />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/my-learning" element={<MyLearning />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
+              </Route>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/ai-teacher" element={<AITeacher />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </ThemeProvider>
     </AuthProvider>
   );
 }
