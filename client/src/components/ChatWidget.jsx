@@ -53,7 +53,9 @@ function ChatWidget() {
   const [messages, setMessages] = useState([
     {
       role: "model",
-      parts: [{ text: "Hi! I'm the Know-How AI. How can I help you today?" }],
+      parts: [
+        { text: "Hi! I'm the Know-How-Know-All AI. How can I help you today?" },
+      ],
     },
   ]);
 

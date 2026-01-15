@@ -241,10 +241,6 @@ app.put("/user/add-xp", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-
 // Leaderboard Route
 
 app.get("/leaderboard", async (req, res) => {
@@ -277,13 +273,15 @@ app.post("/api/chatbot", async (req, res) => {
     res.json({ text });
   } catch (error) {
     console.log("Chatbot error", error);
-    res
-      .status(500)
-      .json({
-        error:
-          "I'm having trouble connecting right now. Try again after sometime",
-      });
+    res.status(500).json({
+      error:
+        "I'm having trouble connecting right now. Try again after sometime",
+    });
   }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 // WEBSOCKET SERVER (For AI Teacher)
