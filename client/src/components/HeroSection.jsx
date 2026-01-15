@@ -1,9 +1,13 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import { ThemeContext } from "../context/Theme"; // ✅ Import ThemeContext
 
 function HeroSection() {
   const [isBtnHover, setIsBtnHover] = useState(false);
+
+  // ✅ Get Theme Data
+  const { theme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
 
   const styles = {
     heroSection: {
@@ -11,11 +15,13 @@ function HeroSection() {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      background: "#a0f1bd",
+      // ✅ Dynamic Background: Mint Green vs Deep Dark Green
+      background: isDark ? "#0f1c0b" : "#a0f1bd",
       width: "100%",
       padding: "60px 40px",
       gap: "50px",
       boxSizing: "border-box",
+      transition: "background 0.3s ease", // Smooth transition
     },
     context: {
       flex: 1,
@@ -26,29 +32,42 @@ function HeroSection() {
     h1: {
       fontSize: "48px",
       lineHeight: "1.2",
-      color: "#2e4f21",
+      // ✅ Dynamic Title: Dark Green vs Mint Green
+      color: isDark ? "#a0f1bd" : "#2e4f21",
       margin: 0,
+      transition: "color 0.3s ease",
     },
     paragraph: {
       fontSize: "18px",
       lineHeight: "1.6",
-      color: "#555",
+      // ✅ Dynamic Text: Grey vs Light Grey
+      color: isDark ? "#e0e0e0" : "#555",
       maxWidth: "600px",
+      transition: "color 0.3s ease",
     },
     btn: {
       width: "fit-content",
       padding: "16px 32px",
-      // Dynamic background based on hover state
-      backgroundColor: isBtnHover ? "#7d9276" : "#2e4f21",
-      color: "#fff",
+      // ✅ Dynamic Button:
+      // Light Mode: Dark Green bg
+      // Dark Mode: Mint Green bg (for contrast)
+      backgroundColor: isDark
+        ? isBtnHover
+          ? "#fff"
+          : "#a0f1bd"
+        : isBtnHover
+        ? "#7d9276"
+        : "#2e4f21",
+
+      color: isDark ? "#000" : "#fff", // Text color flips based on bg
+
       border: "none",
       borderRadius: "8px",
       fontSize: "18px",
       fontWeight: "600",
       cursor: "pointer",
-      // Transform logic based on hover state
       transform: isBtnHover ? "translateY(-2px)" : "translateY(0)",
-      transition: "transform 0.2s ease, background-color 0.2s ease",
+      transition: "all 0.2s ease",
     },
     imgContainer: {
       flex: 1,
@@ -63,11 +82,13 @@ function HeroSection() {
       borderRadius: "12px",
       minHeight: "300px",
       objectFit: "contain",
+      // Optional: slight brightness adjustment for dark mode to make image pop
+      filter: isDark ? "brightness(0.9)" : "none",
+      transition: "filter 0.3s ease",
     },
   };
 
   return (
-    // Apply styles using the style={} prop
     <div style={styles.heroSection} className="hero-section">
       <div style={styles.context}>
         <h1 style={styles.h1}>Learn, Perform, Compete, and Hustle</h1>

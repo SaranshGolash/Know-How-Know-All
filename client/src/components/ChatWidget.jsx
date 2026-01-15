@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
+import { ThemeContext } from "../context/Theme"; // ✅ Import Context
 
 // Icons
 const ChatIcon = () => (
@@ -50,6 +51,10 @@ function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // ✅ Get Theme Data
+  const { theme, colors } = useContext(ThemeContext);
+
   const [messages, setMessages] = useState([
     {
       role: "model",
@@ -61,7 +66,6 @@ function ChatWidget() {
 
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isOpen]);
@@ -69,7 +73,6 @@ function ChatWidget() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // 1. Add User Message to UI
     const userMsg = { role: "user", parts: [{ text: input }] };
     const newHistory = [...messages, userMsg];
     setMessages(newHistory);
@@ -77,7 +80,6 @@ function ChatWidget() {
     setIsLoading(true);
 
     try {
-      // 2. Send to Backend
       const response = await fetch("http://localhost:5000/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -89,7 +91,6 @@ function ChatWidget() {
 
       const data = await response.json();
 
-      // 3. Add AI Response to UI
       setMessages([
         ...newHistory,
         { role: "model", parts: [{ text: data.text }] },
@@ -105,10 +106,22 @@ function ChatWidget() {
     }
   };
 
-  // Allow "Enter" key to send
   const handleKeyPress = (e) => {
     if (e.key === "Enter") handleSend();
   };
+
+  // ✅ Define Dynamic Colors
+  const isDark = theme === "dark";
+  const windowBg = isDark ? "#252526" : "#fff";
+  const bodyBg = isDark ? "#1e1e1e" : "#f9f9f9";
+  const borderColor = isDark ? "#333" : "#eee";
+
+  // Bubble Colors
+  const aiBubbleBg = isDark ? "#333" : "#e9e9e9";
+  const aiText = isDark ? "#fff" : "#333";
+
+  const userBubbleBg = isDark ? "#2E4F21" : "#a0f1bd"; // Dark Green vs Light Green
+  const userText = isDark ? "#fff" : "#000";
 
   const styles = {
     // Floating Button
@@ -119,7 +132,7 @@ function ChatWidget() {
       width: "60px",
       height: "60px",
       borderRadius: "50%",
-      background: "#2E4F21",
+      background: "#2E4F21", // Always keep brand green for recognition
       color: "#fff",
       display: "flex",
       justifyContent: "center",
@@ -128,6 +141,7 @@ function ChatWidget() {
       boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
       zIndex: 1000,
       transition: "transform 0.2s",
+      border: isDark ? "1px solid #a0f1bd" : "none", // Subtle border in dark mode
     },
     // Chat Window
     window: {
@@ -136,7 +150,7 @@ function ChatWidget() {
       right: "30px",
       width: "350px",
       height: "500px",
-      background: "#fff",
+      background: windowBg, // ✅ Dynamic
       borderRadius: "12px",
       boxShadow: "0 5px 25px rgba(0,0,0,0.2)",
       display: isOpen ? "flex" : "none",
@@ -144,6 +158,7 @@ function ChatWidget() {
       overflow: "hidden",
       zIndex: 1000,
       fontFamily: "'Inter', sans-serif",
+      border: isDark ? "1px solid #333" : "none",
     },
     header: {
       background: "#2E4F21",
@@ -158,7 +173,7 @@ function ChatWidget() {
       flex: 1,
       padding: "15px",
       overflowY: "auto",
-      background: "#f9f9f9",
+      background: bodyBg, // ✅ Dynamic
     },
     messageRow: { display: "flex", marginBottom: "10px" },
     bubble: {
@@ -170,17 +185,19 @@ function ChatWidget() {
     },
     inputArea: {
       padding: "10px",
-      borderTop: "1px solid #eee",
+      borderTop: `1px solid ${borderColor}`, // ✅ Dynamic
       display: "flex",
       gap: "10px",
-      background: "#fff",
+      background: windowBg, // ✅ Dynamic
     },
     input: {
       flex: 1,
       padding: "10px",
       borderRadius: "20px",
-      border: "1px solid #ddd",
+      border: `1px solid ${borderColor}`, // ✅ Dynamic
       outline: "none",
+      background: isDark ? "#333" : "#fff", // ✅ Dynamic
+      color: isDark ? "#fff" : "#000", // ✅ Dynamic
     },
     sendBtn: {
       background: "#2E4F21",
@@ -231,8 +248,9 @@ function ChatWidget() {
                 <div
                   style={{
                     ...styles.bubble,
-                    background: isAi ? "#e9e9e9" : "#a0f1bd",
-                    color: isAi ? "#333" : "#000",
+                    // ✅ Apply Dynamic Colors
+                    background: isAi ? aiBubbleBg : userBubbleBg,
+                    color: isAi ? aiText : userText,
                     borderBottomLeftRadius: isAi ? "2px" : "12px",
                     borderBottomRightRadius: isAi ? "12px" : "2px",
                   }}
@@ -247,8 +265,8 @@ function ChatWidget() {
               <div
                 style={{
                   ...styles.bubble,
-                  background: "#e9e9e9",
-                  color: "#666",
+                  background: aiBubbleBg,
+                  color: isDark ? "#aaa" : "#666",
                   fontStyle: "italic",
                 }}
               >

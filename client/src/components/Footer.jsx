@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
+import { ThemeContext } from "../context/Theme"; // ✅ Import ThemeContext
 
 function Footer() {
+  // Get Theme Data
+  const { theme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
+
   // Responsive Logic
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -16,13 +21,16 @@ function Footer() {
   // Styles
   const styles = {
     footer: {
-      backgroundColor: "#2E4F21",
-      color: "#ffffff",
+      // ✅ Dynamic Background: Brand Green (Light Mode) vs Deep Dark Green/Black (Dark Mode)
+      backgroundColor: isDark ? "#0f1c0b" : "#2E4F21",
+      color: "#ffffff", // Text stays white for contrast on both dark backgrounds
       padding: isMobile ? "60px 20px" : "80px 40px",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       marginTop: "auto",
+      transition: "background-color 0.3s ease", // Smooth theme transition
+      borderTop: isDark ? "1px solid #333" : "none", // Subtle border in dark mode
     },
     container: {
       display: "flex",
@@ -45,13 +53,14 @@ function Footer() {
     logo: {
       fontSize: "24px",
       fontWeight: "700",
-      color: "#a0f1bd",
+      color: "#a0f1bd", // Mint Green (Looks good on both backgrounds)
       textDecoration: "none",
     },
     tagline: {
       fontSize: "16px",
       lineHeight: "1.6",
       opacity: 0.8,
+      color: isDark ? "#ccc" : "#fff", // Slightly muted in dark mode
     },
 
     // Links
@@ -64,7 +73,7 @@ function Footer() {
     columnTitle: {
       fontSize: "18px",
       fontWeight: "700",
-      color: "#a0f1bd",
+      color: "#a0f1bd", // Mint Green Accent
       marginBottom: "8px",
     },
 
@@ -73,7 +82,9 @@ function Footer() {
       width: "100%",
       maxWidth: "1280px",
       height: "1px",
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      backgroundColor: isDark
+        ? "rgba(255, 255, 255, 0.1)"
+        : "rgba(255, 255, 255, 0.2)",
       marginBottom: "30px",
     },
     bottomBar: {
@@ -86,6 +97,7 @@ function Footer() {
       gap: "20px",
       fontSize: "14px",
       opacity: 0.6,
+      color: isDark ? "#aaa" : "#fff",
     },
   };
 
@@ -133,7 +145,6 @@ function Footer() {
       <div style={styles.bottomBar}>
         <span>© 2026 Know-How-Know-All. All rights reserved.</span>
         <div style={{ display: "flex", gap: "20px" }}>
-          {/* Simple text placeholders for social icons */}
           <span style={{ cursor: "pointer" }}>Twitter</span>
           <span style={{ cursor: "pointer" }}>LinkedIn</span>
           <span style={{ cursor: "pointer" }}>Instagram</span>

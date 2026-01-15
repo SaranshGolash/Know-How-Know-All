@@ -2,12 +2,18 @@ import React, { useContext } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { handleCheckout } from "../utils/paymentHandler";
+import { ThemeContext } from "../context/Theme";
 
 function AddToCart() {
   const location = useLocation();
   const { user } = useContext(AuthContext);
+  const { colors, theme } = useContext(ThemeContext);
+
   // Get the item passed from ExploreMore, if available
   const newItem = location.state?.item;
+
+  // Define a dynamic accent color (Dark Green for Light Mode, Light Green for Dark Mode)
+  const accentColor = theme === "light" ? "#2E4F21" : "#a0f1bd";
 
   const styles = {
     container: {
@@ -15,55 +21,65 @@ function AddToCart() {
       margin: "0 auto",
       padding: "80px 20px",
       minHeight: "60vh",
+      color: colors.text,
     },
     title: {
       fontSize: "32px",
-      color: "#2E4F21",
+      color: accentColor,
       marginBottom: "30px",
-      borderBottom: "1px solid #ddd",
+      borderBottom: `1px solid ${colors.border}`,
       paddingBottom: "20px",
     },
     cartItem: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      background: "#fff",
+      background: colors.cardBg,
       padding: "20px",
       borderRadius: "12px",
       boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
       marginBottom: "20px",
-      borderLeft: "5px solid #2E4F21",
+      borderLeft: `5px solid ${accentColor}`,
     },
     itemName: {
       fontSize: "20px",
       fontWeight: "700",
-      color: "#333",
+      color: colors.text,
+    },
+    itemDesc: {
+      color: theme === "light" ? "#666" : "#aaa",
     },
     itemPrice: {
       fontSize: "18px",
       fontWeight: "600",
-      color: "#2E4F21",
+      color: accentColor,
     },
     emptyState: {
       textAlign: "center",
-      color: "#666",
+      color: theme === "light" ? "#666" : "#aaa",
       marginTop: "50px",
     },
     checkoutBtn: {
       background: "#2E4F21",
       color: "#fff",
       padding: "15px 40px",
-      border: "none",
+      border: theme === "light" ? "none" : "1px solid #a0f1bd",
       borderRadius: "8px",
       fontSize: "18px",
       cursor: "pointer",
       marginTop: "20px",
       float: "right",
+      transition: "background 0.3s",
     },
     link: {
-      color: "#2E4F21",
+      color: accentColor,
       textDecoration: "underline",
       cursor: "pointer",
+    },
+    totalText: {
+      fontSize: "24px",
+      fontWeight: "bold",
+      color: colors.text,
     },
   };
 
@@ -76,19 +92,19 @@ function AddToCart() {
           <div style={styles.cartItem}>
             <div>
               <div style={styles.itemName}>{newItem.title}</div>
-              <span style={{ color: "#666" }}>{newItem.description}</span>
+              <span style={styles.itemDesc}>{newItem.description}</span>
             </div>
             <div style={styles.itemPrice}>$49.99</div>
           </div>
 
           {/* Subtotal Area */}
           <div style={{ textAlign: "right", marginTop: "40px" }}>
-            <div style={{ fontSize: "24px", fontWeight: "bold" }}>
-              Total: $49.99
-            </div>
+            <div style={styles.totalText}>Total: $49.99</div>
             <button
               style={styles.checkoutBtn}
               onClick={() => handleCheckout(user?.name ? "1" : null, newItem)}
+              onMouseOver={(e) => (e.target.style.opacity = "0.9")}
+              onMouseOut={(e) => (e.target.style.opacity = "1")}
             >
               Checkout
             </button>
