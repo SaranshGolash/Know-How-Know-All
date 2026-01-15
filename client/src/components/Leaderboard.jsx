@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { ThemeContext } from "../context/Theme";
 
 function Leaderboard() {
   const [users, setUsers] = useState([]);
+
+  const { theme, colors } = useContext(ThemeContext);
+  const isDark = theme === "dark";
 
   useEffect(() => {
     fetch("http://localhost:5000/leaderboard")
@@ -10,28 +14,34 @@ function Leaderboard() {
       .catch((err) => console.error(err));
   }, []);
 
+  const accentColor = isDark ? "#a0f1bd" : "#2E4F21"; // Mint vs Dark Green
+  const winnerBg = isDark ? "#0f1c0b" : "#f0fdf4"; // Deep Green vs Pale Green
+  const borderColor = isDark ? "#333" : "#eee";
+
   const styles = {
     container: {
       padding: "40px",
       maxWidth: "800px",
       margin: "0 auto",
       fontFamily: "'Inter', sans-serif",
+      color: colors.text,
     },
     title: {
       textAlign: "center",
-      color: "#2E4F21",
+      color: accentColor,
       marginBottom: "30px",
       fontSize: "32px",
     },
     card: {
-      background: "#fff",
+      background: colors.cardBg,
       borderRadius: "12px",
       boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
       overflow: "hidden",
+      border: isDark ? "1px solid #333" : "none", // Subtle border for dark mode
     },
     headerRow: {
       display: "flex",
-      background: "#2E4F21",
+      background: "#2E4F21", // Keep header green for branding
       color: "#fff",
       padding: "15px 20px",
       fontWeight: "bold",
@@ -39,18 +49,29 @@ function Leaderboard() {
     row: {
       display: "flex",
       padding: "15px 20px",
-      borderBottom: "1px solid #eee",
+      borderBottom: `1px solid ${borderColor}`,
       alignItems: "center",
       transition: "background 0.2s",
     },
-    rank: { width: "10%", fontWeight: "bold", color: "#888" },
-    name: { flex: 1, fontWeight: "600", color: "#333" },
-    streak: { width: "15%", textAlign: "center" },
+    rank: {
+      width: "10%",
+      fontWeight: "bold",
+      color: isDark ? "#aaa" : "#888",
+    },
+    name: {
+      flex: 1,
+      fontWeight: "600",
+      color: colors.text,
+    },
+    streak: {
+      width: "15%",
+      textAlign: "center",
+    },
     xp: {
       width: "20%",
       textAlign: "right",
       fontWeight: "bold",
-      color: "#2E4F21",
+      color: accentColor,
     },
     medal: { marginRight: "5px" },
   };
@@ -80,7 +101,7 @@ function Leaderboard() {
               key={index}
               style={{
                 ...styles.row,
-                background: index === 0 ? "#f0fdf4" : "#fff", // Highlight Winner
+                background: index === 0 ? winnerBg : colors.cardBg,
               }}
             >
               <div style={styles.rank}>{getRankIcon(index)}</div>
@@ -95,6 +116,7 @@ function Leaderboard() {
                       padding: "2px 6px",
                       borderRadius: "10px",
                       color: "#000",
+                      fontWeight: "bold",
                     }}
                   >
                     Leader
@@ -108,7 +130,13 @@ function Leaderboard() {
             </div>
           ))
         ) : (
-          <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
+          <div
+            style={{
+              padding: "20px",
+              textAlign: "center",
+              color: isDark ? "#aaa" : "#666",
+            }}
+          >
             Loading leaderboard...
           </div>
         )}

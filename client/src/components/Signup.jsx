@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ThemeContext } from "../context/Theme";
 import ModernInput from "./ModernInput";
 
 function Signup() {
@@ -9,6 +10,9 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+
+  const { theme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
 
   // UI States
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -63,7 +67,8 @@ function Signup() {
       flexDirection: isMobile ? "column" : "row",
       minHeight: "100vh",
       width: "100%",
-      background: "#f4f7f6",
+      background: isDark ? "#121212" : "#f4f7f6",
+      transition: "background 0.3s ease",
     },
 
     // LEFT PANEL (Brand / Marketing)
@@ -108,33 +113,36 @@ function Signup() {
       justifyContent: "center",
       alignItems: "center",
       padding: isMobile ? "40px 20px" : "40px",
-      overflowY: "auto", // Allows scrolling if form gets too tall on small screens
+      overflowY: "auto",
     },
     formCard: {
       width: "100%",
       maxWidth: "500px",
-      background: "#ffffff",
+      background: isDark ? "#1e1e1e" : "#ffffff",
       padding: isMobile ? "30px" : "50px",
       borderRadius: "24px",
-      boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
+      boxShadow: isDark
+        ? "0 20px 40px rgba(0,0,0,0.3)"
+        : "0 20px 40px rgba(0,0,0,0.08)",
+      transition: "background 0.3s ease",
     },
     h3: {
       fontSize: "28px",
       fontWeight: "700",
-      color: "#2E4F21",
+      color: isDark ? "#a0f1bd" : "#2E4F21",
       marginBottom: "10px",
       textAlign: "center",
     },
     subHeader: {
       textAlign: "center",
-      color: "#666",
+      color: isDark ? "#aaa" : "#666",
       marginBottom: "30px",
       fontSize: "15px",
     },
     form: {
       display: "flex",
       flexDirection: "column",
-      gap: "16px", // Slightly tighter gap than login to fit more fields
+      gap: "16px",
     },
     signupBtn: {
       marginTop: "10px",
@@ -154,13 +162,14 @@ function Signup() {
       marginTop: "24px",
       textAlign: "center",
       fontSize: "14px",
-      color: "#666",
+      color: isDark ? "#aaa" : "#666",
     },
     link: {
-      color: "#2E4F21",
+      color: isDark ? "#a0f1bd" : "#2E4F21",
       fontWeight: "600",
       textDecoration: "none",
       marginLeft: "5px",
+      cursor: "pointer",
     },
   };
 

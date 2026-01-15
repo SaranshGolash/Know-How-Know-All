@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { ThemeContext } from "../context/Theme"; // ✅ Import Context
 
 function Pricing() {
+  const { theme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
+
   // Responsive Logic
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
   const [selectedPlan, setSelectedPlan] = useState("Pro");
 
   useEffect(() => {
@@ -15,6 +18,10 @@ function Pricing() {
   const isMobile = windowWidth <= 768;
   const isTablet = windowWidth <= 1024;
 
+  // Dynamic Colors
+  const accentColor = isDark ? "#a0f1bd" : "#2E4F21";
+  const checkColor = isDark ? "#a0f1bd" : "#2E4F21";
+
   // Styles
   const styles = {
     pricing: {
@@ -22,9 +29,10 @@ function Pricing() {
       flexFlow: "column nowrap",
       alignItems: "center",
       padding: isMobile ? "60px 20px" : "100px 40px",
-      backgroundColor: "#f9f9f9",
+      backgroundColor: isDark ? "#121212" : "#f9f9f9",
       width: "100%",
       boxSizing: "border-box",
+      transition: "background-color 0.3s ease",
     },
     // Header Section
     labelSpan: {
@@ -41,13 +49,13 @@ function Pricing() {
     h2: {
       fontSize: isMobile ? "32px" : "42px",
       fontWeight: "800",
-      color: "#2E4F21",
+      color: accentColor,
       margin: "0 0 20px 0",
       textAlign: "center",
     },
     subSpan: {
       fontSize: "18px",
-      color: "#666",
+      color: isDark ? "#ccc" : "#666",
       marginBottom: "60px",
       textAlign: "center",
       maxWidth: "600px",
@@ -72,7 +80,7 @@ function Pricing() {
       padding: "14px",
       backgroundColor: "#2E4F21",
       color: "#ffffff",
-      border: "none",
+      border: isDark ? "1px solid #a0f1bd" : "none",
       borderRadius: "8px",
       fontSize: "16px",
       fontWeight: "600",
@@ -91,8 +99,8 @@ function Pricing() {
     },
     li: {
       padding: "10px 0",
-      borderBottom: "1px solid #eee",
-      color: "#555",
+      borderBottom: isDark ? "1px solid #333" : "1px solid #eee",
+      color: isDark ? "#ddd" : "#555",
       fontSize: "15px",
       display: "flex",
       alignItems: "center",
@@ -123,10 +131,9 @@ function Pricing() {
           pricing="$17"
           timeSpan="month"
           description="Get started with essential tools to manage your study analytics and career efficiently."
-          // CHECK: Is this the selected plan?
           isHighlighted={selectedPlan === "Standard"}
-          // ACTION: Click to select this plan
           onClick={() => setSelectedPlan("Standard")}
+          isDark={isDark}
         >
           <button
             style={getButtonStyle(1)}
@@ -137,19 +144,19 @@ function Pricing() {
           </button>
           <ul style={styles.ul}>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span> Access
-              to core course materials
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
+              Access to core course materials
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span> Weekly
-              live sessions with instructors
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
+              Weekly live sessions with instructors
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span>{" "}
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
               Standard support for all inquiries
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span>{" "}
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
               Discounts available for future updates
             </li>
           </ul>
@@ -163,6 +170,7 @@ function Pricing() {
           description="Beginners who are looking for essential resources and support"
           isHighlighted={selectedPlan === "Pro"}
           onClick={() => setSelectedPlan("Pro")}
+          isDark={isDark}
         >
           <button
             style={getButtonStyle(2)}
@@ -173,23 +181,23 @@ function Pricing() {
           </button>
           <ul style={styles.ul}>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span> Access
-              to core course materials
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
+              Access to core course materials
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span> Weekly
-              live Q&A with instructors
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
+              Weekly live Q&A with instructors
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span>{" "}
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
               Unlimited support for all inquiries
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span> Get
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span> Get
               all course materials and updates
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span>{" "}
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
               Discounts on future course updates
             </li>
           </ul>
@@ -203,6 +211,7 @@ function Pricing() {
           description="Comprehensive features for experts seeking mastery"
           isHighlighted={selectedPlan === "Platinum"}
           onClick={() => setSelectedPlan("Platinum")}
+          isDark={isDark}
         >
           <button
             style={getButtonStyle(3)}
@@ -213,32 +222,32 @@ function Pricing() {
           </button>
           <ul style={styles.ul}>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span>{" "}
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
               Exclusive access to all course materials
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span>{" "}
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
               Priority live Q&A with instructors
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span>{" "}
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
               Support with Unlimited responses
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span>{" "}
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
               Special Discounts on all future courses
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span> Full
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span> Full
               access to every course update
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span> VIP
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span> VIP
               support with faster resolutions
             </li>
             <li style={styles.li}>
-              <span style={{ color: "#2E4F21", marginRight: 8 }}>✓</span> Access
-              to all course materials
+              <span style={{ color: checkColor, marginRight: 8 }}>✓</span>{" "}
+              Access to all course materials
             </li>
           </ul>
         </PricingCard>
@@ -255,12 +264,17 @@ function PricingCard({
   children,
   isHighlighted,
   onClick,
+  isDark,
 }) {
   const [hover, setHover] = useState(false);
 
+  // Dynamic Border Color based on Theme + Selection
+  const activeBorder = isDark ? "#a0f1bd" : "#2E4F21";
+  const inactiveBorder = isDark ? "#333" : "#eee";
+
   const styles = {
     card: {
-      backgroundColor: "#ffffff",
+      backgroundColor: isDark ? "#1e1e1e" : "#ffffff", // ✅ Dynamic Card Bg
       borderRadius: "16px",
       padding: "40px",
       display: "flex",
@@ -268,12 +282,18 @@ function PricingCard({
       alignItems: "flex-start",
       transition: "all 0.3s ease",
       // Conditional styles for the Selected card
-      border: isHighlighted ? "3px solid #2E4F21" : "1px solid #eee",
+      border: isHighlighted
+        ? `3px solid ${activeBorder}`
+        : `1px solid ${inactiveBorder}`,
       // Lifts up if hovered OR if highlighted
       transform: hover || isHighlighted ? "translateY(-10px)" : "translateY(0)",
       boxShadow:
         hover || isHighlighted
-          ? "0 20px 40px rgba(46, 79, 33, 0.15)"
+          ? isDark
+            ? "0 20px 40px rgba(0,0,0,0.5)"
+            : "0 20px 40px rgba(46, 79, 33, 0.15)"
+          : isDark
+          ? "0 4px 10px rgba(0,0,0,0.2)"
           : "0 4px 10px rgba(0,0,0,0.05)",
       position: "relative",
       cursor: "pointer",
@@ -292,7 +312,7 @@ function PricingCard({
     h2: {
       fontSize: "48px",
       fontWeight: "800",
-      color: "#1a1a1a",
+      color: isDark ? "#ffffff" : "#1a1a1a", // ✅ Dynamic Price Color
       margin: "0 0 16px 0",
       display: "flex",
       alignItems: "baseline",
@@ -305,7 +325,7 @@ function PricingCard({
     },
     description: {
       fontSize: "16px",
-      color: "#555",
+      color: isDark ? "#ccc" : "#555", // ✅ Dynamic Description
       lineHeight: "1.5",
       marginBottom: "auto",
       minHeight: "60px",

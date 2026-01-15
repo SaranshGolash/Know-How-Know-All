@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
-import { ThemeContext } from "../context/Theme"; // ✅ Import ThemeContext
+import { ThemeContext } from "../context/Theme";
 
 function Footer() {
   // Get Theme Data
@@ -21,7 +21,6 @@ function Footer() {
   // Styles
   const styles = {
     footer: {
-      // ✅ Dynamic Background: Brand Green (Light Mode) vs Deep Dark Green/Black (Dark Mode)
       backgroundColor: isDark ? "#0f1c0b" : "#2E4F21",
       color: "#ffffff", // Text stays white for contrast on both dark backgrounds
       padding: isMobile ? "60px 20px" : "80px 40px",
@@ -53,7 +52,7 @@ function Footer() {
     logo: {
       fontSize: "24px",
       fontWeight: "700",
-      color: "#a0f1bd", // Mint Green (Looks good on both backgrounds)
+      color: "#a0f1bd",
       textDecoration: "none",
     },
     tagline: {
@@ -73,7 +72,7 @@ function Footer() {
     columnTitle: {
       fontSize: "18px",
       fontWeight: "700",
-      color: "#a0f1bd", // Mint Green Accent
+      color: "#a0f1bd",
       marginBottom: "8px",
     },
 
@@ -159,7 +158,7 @@ function FooterLink({ to, children }) {
   const [hover, setHover] = useState(false);
 
   const style = {
-    color: hover ? "#a0f1bd" : "#ffffff", // White to Mint Green
+    color: hover ? "#a0f1bd" : "#ffffff",
     textDecoration: "none",
     fontSize: "16px",
     opacity: hover ? 1 : 0.8,

@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { ThemeContext } from "../context/Theme"; // Ensure correct path
+import { ThemeContext } from "../context/Theme";
 
 function Header() {
   const { user, logout } = useContext(AuthContext);
@@ -24,7 +24,7 @@ function Header() {
 
   const styles = {
     header: {
-      background: colors.headerBg || "#a0f1bd", // Use context color if available
+      background: colors.headerBg || "#a0f1bd",
       width: "100%",
       display: "flex",
       flexDirection: "column",
@@ -50,7 +50,7 @@ function Header() {
     logoText: {
       fontSize: "24px",
       fontWeight: "700",
-      color: theme === "light" ? "#2E4F21" : "#a0f1bd", // Dynamic Color
+      color: theme === "light" ? "#2E4F21" : "#a0f1bd",
       cursor: "pointer",
       textDecoration: "none",
     },
@@ -58,7 +58,7 @@ function Header() {
       fontSize: "18px",
       fontWeight: "500",
       cursor: "pointer",
-      color: theme === "light" ? "#2E4F21" : "#a0f1bd", // Dynamic Color
+      color: theme === "light" ? "#2E4F21" : "#a0f1bd",
       textDecoration: "none",
     },
     // --- Right Side Container ---
@@ -67,10 +67,9 @@ function Header() {
       alignItems: "center",
       gap: "15px",
     },
-    // --- New Header Theme Button ---
+    // Theme Button
     themeBtn: {
       background: "transparent",
-      // Dark border in light mode, Light border in dark mode
       border: `2px solid ${theme === "light" ? "#2E4F21" : "#a0f1bd"}`,
       color: theme === "light" ? "#2E4F21" : "#a0f1bd",
       padding: "8px 16px",
@@ -135,7 +134,7 @@ function Header() {
       position: "absolute",
       top: "50px",
       right: "0",
-      backgroundColor: theme === "light" ? "#fff" : "#333", // Dark mode support
+      backgroundColor: theme === "light" ? "#fff" : "#333",
       boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
       borderRadius: "8px",
       padding: "10px",
@@ -184,7 +183,6 @@ function Header() {
 
         {/* Right Section: Theme Toggle + Auth */}
         <div style={styles.rightSection}>
-          {/* ✅ Theme Toggle (Always Visible) */}
           <button style={styles.themeBtn} onClick={toggleTheme}>
             {theme === "light" ? "🌙 Dark" : "☀️ Light"}
           </button>

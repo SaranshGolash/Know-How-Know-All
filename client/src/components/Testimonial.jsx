@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import TestimonialCardContext from "./TestimonialCardContext";
+import { ThemeContext } from "../context/Theme";
 
 function Testimonial() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  const { theme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
 
   // Update window width on resize
   useEffect(() => {
@@ -14,20 +18,24 @@ function Testimonial() {
   const isTablet = windowWidth <= 1024;
   const isMobile = windowWidth <= 600;
 
+  // Dynamic Colors
+  const titleColor = isDark ? "#a0f1bd" : "#2E4F21";
+  const textColor = isDark ? "#ccc" : "#666";
+
   const styles = {
     testimonial: {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       gap: "10px",
-      background: "#f9f9f9",
+      background: isDark ? "#121212" : "#f9f9f9",
       boxSizing: "border-box",
       margin: "0 auto",
-      // Dynamic Layout based on screen size
       padding: isMobile ? "36px" : "100px",
       width: "100%",
       maxWidth: isMobile ? "375px" : isTablet ? "800px" : "1280px",
       height: "auto",
+      transition: "background 0.3s ease",
     },
     context: {
       display: "flex",
@@ -41,11 +49,13 @@ function Testimonial() {
       margin: 0,
       fontSize: "32px",
       fontWeight: "700",
-      color: "#2E4F21",
+      color: titleColor,
+      transition: "color 0.3s ease",
     },
     contextSpan: {
       fontSize: "16px",
-      color: "#666",
+      color: textColor,
+      transition: "color 0.3s ease",
     },
     // Wrapper to center the cards area
     cardsWrapper: {

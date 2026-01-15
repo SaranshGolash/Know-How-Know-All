@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ServicesCardList from "./ServicesCardList";
+import { ThemeContext } from "../context/Theme";
 
 function Services() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isMainBtnHover, setIsMainBtnHover] = useState(false);
+
+  const { theme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -14,6 +18,10 @@ function Services() {
   const isTablet = windowWidth <= 1024;
   const isMobile = windowWidth <= 600;
 
+  // Dynamic Colors
+  const accentColor = isDark ? "#a0f1bd" : "#2E4F21";
+  const textColor = isDark ? "#ccc" : "#666";
+
   const styles = {
     services: {
       display: "flex",
@@ -21,10 +29,11 @@ function Services() {
       alignItems: "center",
       padding: "0px",
       width: "100%",
-      maxWidth: isMobile ? "375px" : isTablet ? "800px" : "1280px", // Responsive Width
-      background: "#f9f9f9",
+      maxWidth: isMobile ? "375px" : isTablet ? "800px" : "1280px",
+      background: isDark ? "#121212" : "#f9f9f9",
       margin: "0 auto",
       boxSizing: "border-box",
+      transition: "background 0.3s ease",
     },
     introServices: {
       display: "flex",
@@ -35,25 +44,30 @@ function Services() {
       gap: "16px",
       maxWidth: "800px",
     },
+    label: {
+      color: accentColor,
+      fontSize: "16px",
+    },
     introH2: {
       fontSize: "32px",
-      color: "#2E4F21",
+      color: accentColor,
       fontWeight: "700",
       lineHeight: "1.3",
+      transition: "color 0.3s ease",
     },
     introSpan: {
       fontSize: "22px",
-      color: "#666",
+      color: textColor,
       maxWidth: "600px",
       lineHeight: "1.5",
+      transition: "color 0.3s ease",
     },
     exploreBtn: {
       marginTop: "10px",
       padding: "12px 24px",
-      // Dynamic Hover Background
       backgroundColor: isMainBtnHover ? "#7d9276" : "#2e4f21",
       color: "#fff",
-      border: "none",
+      border: isDark ? "1px solid #a0f1bd" : "none",
       borderRadius: "8px",
       cursor: "pointer",
       fontWeight: "600",
@@ -62,7 +76,6 @@ function Services() {
     },
     servicesCardsGrid: {
       display: "grid",
-      // Responsive Grid Columns
       gridTemplateColumns: isMobile
         ? "1fr"
         : isTablet
@@ -78,7 +91,8 @@ function Services() {
   return (
     <div style={styles.services}>
       <div style={styles.introServices}>
-        <span>
+        {/* Applied dynamic style to the label */}
+        <span style={styles.label}>
           <b>Services</b>
         </span>
         <h2 style={styles.introH2}>

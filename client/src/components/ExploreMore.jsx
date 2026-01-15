@@ -1,14 +1,14 @@
 import React, { useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { ThemeContext } from "../context/Theme"; // ✅ Import ThemeContext
+import { ThemeContext } from "../context/Theme";
 import { handleCheckout } from "../utils/paymentHandler";
 
 function ExploreMore() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const { colors, theme } = useContext(ThemeContext); // ✅ Get Theme Data
+  const { colors, theme } = useContext(ThemeContext);
 
   // Retrieve data passed from the previous page
   const service = location.state;
@@ -38,8 +38,8 @@ function ExploreMore() {
 
   // Define dynamic accent colors
   const isDark = theme === "dark";
-  const accentColor = isDark ? "#a0f1bd" : "#2E4F21"; // Light Green in Dark Mode, Dark Green in Light
-  const headerBg = isDark ? "#1b2e13" : "#f0fdf4"; // Dark Green bg vs Light Green bg
+  const accentColor = isDark ? "#a0f1bd" : "#2E4F21";
+  const headerBg = isDark ? "#1b2e13" : "#f0fdf4";
 
   const styles = {
     container: {
@@ -49,23 +49,23 @@ function ExploreMore() {
       display: "flex",
       flexDirection: "column",
       gap: "40px",
-      color: colors.text, // ✅ Dynamic Text
+      color: colors.text,
     },
     header: {
       textAlign: "center",
-      background: headerBg, // ✅ Dynamic Background
+      background: headerBg,
       padding: "60px",
       borderRadius: "24px",
-      border: `1px solid ${accentColor}`, // ✅ Dynamic Border
+      border: `1px solid ${accentColor}`,
     },
     title: {
       fontSize: "42px",
-      color: accentColor, // ✅ Dynamic Title
+      color: accentColor,
       marginBottom: "16px",
     },
     desc: {
       fontSize: "20px",
-      color: isDark ? "#ccc" : "#555", // ✅ Dynamic Description
+      color: isDark ? "#ccc" : "#555",
       maxWidth: "700px",
       margin: "0 auto",
     },
@@ -79,7 +79,7 @@ function ExploreMore() {
     },
     sidebar: {
       flex: 1,
-      background: colors.cardBg, // ✅ Dynamic Card Background
+      background: colors.cardBg,
       padding: "30px",
       borderRadius: "16px",
       boxShadow: "0 10px 40px rgba(0,0,0,0.08)",
@@ -92,7 +92,7 @@ function ExploreMore() {
     price: {
       fontSize: "32px",
       fontWeight: "800",
-      color: accentColor, // ✅ Dynamic Price
+      color: accentColor,
     },
     btnBuy: {
       padding: "16px",
@@ -108,8 +108,8 @@ function ExploreMore() {
     btnAdd: {
       padding: "16px",
       backgroundColor: "transparent",
-      color: accentColor, // ✅ Dynamic Text
-      border: `2px solid ${accentColor}`, // ✅ Dynamic Border
+      color: accentColor,
+      border: `2px solid ${accentColor}`,
       borderRadius: "8px",
       fontSize: "16px",
       fontWeight: "600",
@@ -118,19 +118,19 @@ function ExploreMore() {
       transition: "0.2s",
     },
     h3: {
-      color: accentColor, // ✅ Dynamic Headers
+      color: accentColor,
       borderBottom: `2px solid ${isDark ? "#333" : "#a0f1bd"}`,
       paddingBottom: "10px",
       marginBottom: "20px",
     },
     p: {
       lineHeight: "1.8",
-      color: isDark ? "#ddd" : "#444", // ✅ Dynamic Paragraphs
+      color: isDark ? "#ddd" : "#444",
       marginBottom: "20px",
     },
     listItem: {
       marginBottom: "10px",
-      color: isDark ? "#ccc" : "#555", // ✅ Dynamic List
+      color: isDark ? "#ccc" : "#555",
     },
   };
 

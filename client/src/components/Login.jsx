@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { ThemeContext } from "../context/Theme";
 import ModernInput from "./ModernInput";
 
 function Login() {
@@ -10,6 +11,10 @@ function Login() {
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const { theme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
+
   // State for responsiveness and interactions
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isBtnHover, setIsBtnHover] = useState(false);
@@ -54,18 +59,20 @@ function Login() {
   };
 
   const styles = {
-    // Main container: A full-height split-screen layout
+    // Main container
     loginSection: {
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
       minHeight: "100vh",
       width: "100%",
-      background: "#f4f7f6",
+      // ✅ Dynamic Background
+      background: isDark ? "#121212" : "#f4f7f6",
+      transition: "background 0.3s ease",
     },
 
-    // LEFT PANEL (Brand Side)
+    // LEFT PANEL (Brand Side) - Kept consistent as it looks good in both modes
     loginText: {
-      flex: isMobile ? "none" : "1", // Takes 50% width on desktop
+      flex: isMobile ? "none" : "1",
       padding: isMobile ? "60px 30px" : "80px",
       background: "linear-gradient(135deg, #2E4F21 0%, #1a3312 100%)",
       color: "#ffffff",
@@ -118,7 +125,7 @@ function Login() {
 
     // RIGHT PANEL (Form Side)
     loginFormSection: {
-      flex: isMobile ? "none" : "1", // Takes the other 50% width
+      flex: isMobile ? "none" : "1",
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
@@ -128,15 +135,18 @@ function Login() {
     formCard: {
       width: "100%",
       maxWidth: "450px",
-      background: "#ffffff",
+      background: isDark ? "#1e1e1e" : "#ffffff",
       padding: isMobile ? "30px" : "50px",
       borderRadius: "24px",
-      boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
+      boxShadow: isDark
+        ? "0 20px 40px rgba(0,0,0,0.3)"
+        : "0 20px 40px rgba(0,0,0,0.08)",
+      transition: "background 0.3s ease",
     },
     h3: {
       fontSize: "28px",
       fontWeight: "700",
-      color: "#2E4F21",
+      color: isDark ? "#a0f1bd" : "#2E4F21",
       marginBottom: "30px",
       textAlign: "center",
     },
@@ -160,18 +170,18 @@ function Login() {
       transform: isBtnHover ? "translateY(-2px)" : "translateY(0)",
       boxShadow: isBtnHover ? "0 10px 20px rgba(46, 79, 33, 0.3)" : "none",
     },
-    // Bottom links (Forgot password / Sign up)
+    // Bottom links
     formFooter: {
       marginTop: "24px",
       textAlign: "center",
       fontSize: "14px",
-      color: "#666",
+      color: isDark ? "#aaa" : "#666",
       display: "flex",
       flexDirection: "column",
       gap: "10px",
     },
     link: {
-      color: "#2E4F21",
+      color: isDark ? "#a0f1bd" : "#2E4F21",
       fontWeight: "600",
       textDecoration: "none",
       cursor: "pointer",
@@ -182,8 +192,7 @@ function Login() {
     <div style={styles.loginSection}>
       {/* Left Side: Brand & Welcome Text */}
       <div style={styles.loginText}>
-        <div style={styles.patternOverlay}></div>{" "}
-        {/* Subtle background effect */}
+        <div style={styles.patternOverlay}></div>
         <div style={styles.companyNameBlock}>
           <span style={styles.companyName}>Know-How-Know-All</span>
         </div>
@@ -191,7 +200,6 @@ function Login() {
           <span style={styles.welcomeSmall}>Nice to meet you again.</span>
           <h1 style={styles.h1}>Welcome Back!</h1>
         </div>
-        {/* Empty div to balance flex spacing (pushes text to center vertically) */}
         <div style={{ marginTop: "auto" }}></div>
       </div>
 
@@ -201,7 +209,6 @@ function Login() {
           <h3 style={styles.h3}>Login Account</h3>
 
           <form style={styles.form} onSubmit={handleLogin}>
-            {/* Reusable Input Components */}
             <ModernInput
               type="email"
               label="Email Address"

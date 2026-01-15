@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
-import { ThemeContext } from "../context/Theme"; // ✅ Import Context
+import { ThemeContext } from "../context/Theme";
 
 // Icons
 const ChatIcon = () => (
@@ -52,7 +52,6 @@ function ChatWidget() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ Get Theme Data
   const { theme, colors } = useContext(ThemeContext);
 
   const [messages, setMessages] = useState([
@@ -110,7 +109,6 @@ function ChatWidget() {
     if (e.key === "Enter") handleSend();
   };
 
-  // ✅ Define Dynamic Colors
   const isDark = theme === "dark";
   const windowBg = isDark ? "#252526" : "#fff";
   const bodyBg = isDark ? "#1e1e1e" : "#f9f9f9";
@@ -120,7 +118,7 @@ function ChatWidget() {
   const aiBubbleBg = isDark ? "#333" : "#e9e9e9";
   const aiText = isDark ? "#fff" : "#333";
 
-  const userBubbleBg = isDark ? "#2E4F21" : "#a0f1bd"; // Dark Green vs Light Green
+  const userBubbleBg = isDark ? "#2E4F21" : "#a0f1bd";
   const userText = isDark ? "#fff" : "#000";
 
   const styles = {
@@ -132,7 +130,7 @@ function ChatWidget() {
       width: "60px",
       height: "60px",
       borderRadius: "50%",
-      background: "#2E4F21", // Always keep brand green for recognition
+      background: "#2E4F21",
       color: "#fff",
       display: "flex",
       justifyContent: "center",
@@ -150,7 +148,7 @@ function ChatWidget() {
       right: "30px",
       width: "350px",
       height: "500px",
-      background: windowBg, // ✅ Dynamic
+      background: windowBg,
       borderRadius: "12px",
       boxShadow: "0 5px 25px rgba(0,0,0,0.2)",
       display: isOpen ? "flex" : "none",
@@ -173,7 +171,7 @@ function ChatWidget() {
       flex: 1,
       padding: "15px",
       overflowY: "auto",
-      background: bodyBg, // ✅ Dynamic
+      background: bodyBg,
     },
     messageRow: { display: "flex", marginBottom: "10px" },
     bubble: {
@@ -185,19 +183,19 @@ function ChatWidget() {
     },
     inputArea: {
       padding: "10px",
-      borderTop: `1px solid ${borderColor}`, // ✅ Dynamic
+      borderTop: `1px solid ${borderColor}`,
       display: "flex",
       gap: "10px",
-      background: windowBg, // ✅ Dynamic
+      background: windowBg,
     },
     input: {
       flex: 1,
       padding: "10px",
       borderRadius: "20px",
-      border: `1px solid ${borderColor}`, // ✅ Dynamic
+      border: `1px solid ${borderColor}`,
       outline: "none",
-      background: isDark ? "#333" : "#fff", // ✅ Dynamic
-      color: isDark ? "#fff" : "#000", // ✅ Dynamic
+      background: isDark ? "#333" : "#fff",
+      color: isDark ? "#fff" : "#000",
     },
     sendBtn: {
       background: "#2E4F21",
@@ -215,7 +213,7 @@ function ChatWidget() {
 
   return (
     <>
-      {/* 1. The Floating Button */}
+      {/* The Floating Button */}
       <div
         style={styles.floatBtn}
         onClick={() => setIsOpen(!isOpen)}
@@ -225,7 +223,7 @@ function ChatWidget() {
         {isOpen ? <XIcon /> : <ChatIcon />}
       </div>
 
-      {/* 2. The Chat Window */}
+      {/* The Chat Window */}
       <div style={styles.window}>
         <div style={styles.header}>
           <span>🤖 AI Assistant</span>
@@ -248,7 +246,6 @@ function ChatWidget() {
                 <div
                   style={{
                     ...styles.bubble,
-                    // ✅ Apply Dynamic Colors
                     background: isAi ? aiBubbleBg : userBubbleBg,
                     color: isAi ? aiText : userText,
                     borderBottomLeftRadius: isAi ? "2px" : "12px",
