@@ -259,6 +259,33 @@ app.get("/leaderboard", async (req, res) => {
   }
 });
 
+// CHATBOT ENDPOINT
+
+app.post("/api/chatbot", async (req, res) => {
+  try {
+    const { message, history } = req.body;
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const chat = model.startChat({
+      history: history || [],
+      generativeConfig: {
+        maxOutputTokens: 200,
+      },
+    });
+    const result = await chat.sendMessage(message);
+    const response = await result.response;
+    const text = response.text();
+    res.json({ text });
+  } catch (error) {
+    console.log("Chatbot error", error);
+    res
+      .status(500)
+      .json({
+        error:
+          "I'm having trouble connecting right now. Try again after sometime",
+      });
+  }
+});
+
 // WEBSOCKET SERVER (For AI Teacher)
 const wss = new WebSocketServer({ port: 8080 });
 
