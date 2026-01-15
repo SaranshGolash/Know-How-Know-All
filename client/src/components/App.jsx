@@ -13,6 +13,7 @@ import About from "./About";
 import Pricing from "./Pricing";
 import MyLearning from "./MyLearning";
 import AITeacher from "./AITeacher";
+import Leaderboard from "./Leaderboard";
 import Login from "./Login";
 import Signup from "./Signup";
 import { AuthProvider } from "../context/AuthContext";
@@ -54,6 +55,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/my-learning" element={<MyLearning />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
             </Route>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />

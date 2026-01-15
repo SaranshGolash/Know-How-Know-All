@@ -164,6 +164,9 @@ function Header() {
           <Link to="/support" style={styles.navLink}>
             support
           </Link>
+          <Link to="/leaderboard" style={styles.navLink}>
+            leaderboard 🏆
+          </Link>
         </div>
 
         {/* Buttons */}
