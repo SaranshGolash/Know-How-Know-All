@@ -1,30 +1,20 @@
-import React, { useContext } from "react";
-import { ThemeContext } from "../context/Theme"; // ✅ Import Context
+import React from "react";
 
 function HiringCompanies() {
-  const { theme } = useContext(ThemeContext); // ✅ Get Theme
-  const isDark = theme === "dark";
-
-  const keyframesStyle = `
-    @keyframes scrollLoop {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-  `;
+  const keyframesStyle = ` @keyframes scrollLoop {
+0% { transform: translateX(0); }
+100% { transform: translateX(-50%); }
+}
+`;
 
   const styles = {
     section: {
       overflow: "hidden",
       width: "100%",
-      // ✅ Dynamic Background: Light Grey vs Dark Grey
-      backgroundColor: isDark ? "#121212" : "#f9f9f9",
+      backgroundColor: "#f9f9f9",
       padding: "40px 0",
-      whiteSpace: "nowrap",
+      whiteSpace: "nowrap", // Keeps items in a single horizontal line
       position: "relative",
-      transition: "background-color 0.3s ease",
-      // ✅ Subtle border for separation in dark mode
-      borderTop: isDark ? "1px solid #333" : "none",
-      borderBottom: isDark ? "1px solid #333" : "none",
     },
     track: {
       display: "inline-flex",
@@ -42,21 +32,17 @@ function HiringCompanies() {
 
   const companyList = (
     <>
-      <Company img="/images/amazon.png" isDark={isDark} />
-      <Company img="/images/ey.png" isDark={isDark} />
-      <Company img="/images/facebook.png" name="Facebook" isDark={isDark} />
-      <Company img="/images/google.png" name="Google" isDark={isDark} />
-      <Company img="/images/nike.jpg" name="Nike" isDark={isDark} />
-      <Company img="/images/byjus.png" name="Byjus" isDark={isDark} />
-      <Company img="/images/snapchat.png" name="Snapchat" isDark={isDark} />
-      <Company img="/images/cognizant.png" name="Cognizant" isDark={isDark} />
-      <Company img="/images/tcs.png" name="TCS" isDark={isDark} />
-      <Company img="/images/delloite.png" name="Delloite" isDark={isDark} />
-      <Company
-        img="/images/knowhowknowall.png"
-        name="Know-How-Know-All"
-        isDark={isDark}
-      />
+      <Company img="/images/amazon.png" />
+      <Company img="/images/ey.png" />
+      <Company img="/images/facebook.png" name="Facebook" />
+      <Company img="/images/google.png" name="Google" />
+      <Company img="/images/nike.jpg" name="Nike" />
+      <Company img="/images/byjus.png" name="Byjus" />
+      <Company img="/images/snapchat.png" name="Snapchat" />
+      <Company img="/images/cognizant.png" name="Cognizant" />
+      <Company img="/images/tcs.png" name="TCS" />
+      <Company img="/images/delloite.png" name="Delloite" />
+      <Company img="/images/knowhowknowall.png" name="Know-How-Know-All" />
     </>
   );
 
@@ -66,12 +52,12 @@ function HiringCompanies() {
       <div style={styles.track} className="scrolling-track">
         {companyList}
         {companyList}
-      </div>
+      </div>{" "}
     </div>
   );
 }
 
-function Company({ img, name, isDark }) {
+function Company({ img, name }) {
   const cardStyle = {
     display: "flex",
     alignItems: "center",
@@ -84,11 +70,6 @@ function Company({ img, name, isDark }) {
     height: "80px",
     width: "150px",
     objectFit: "contain",
-    // ✅ Dark Mode Magic: Turn logos into flat white silhouettes
-    // This ensures black logos (like Nike/Amazon) are visible on the dark background
-    filter: isDark ? "grayscale(100%) brightness(100) contrast(0%)" : "none",
-    opacity: isDark ? 0.8 : 1, // Slight transparency for the white logos
-    transition: "filter 0.3s ease, opacity 0.3s ease",
   };
 
   return (
