@@ -1,7 +1,7 @@
 import React from "react";
 import Editor from "@monaco-editor/react";
 
-function Whiteboard({ data }) {
+function Whiteboard({ data, onClose }) {
   if (!data) return null;
 
   const styles = {
@@ -21,6 +21,14 @@ function Whiteboard({ data }) {
       maxHeight: "60vh",
       overflowY: "auto",
     },
+    header: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "10px",
+      borderBottom: "2px solid #a0f1bd",
+      paddingBottom: "5px",
+    },
     title: {
       fontSize: "16px",
       fontWeight: "800",
@@ -29,6 +37,14 @@ function Whiteboard({ data }) {
       borderBottom: "2px solid #a0f1bd",
       paddingBottom: "5px",
       textTransform: "uppercase",
+    },
+    closeBtn: {
+      background: "none",
+      border: "none",
+      fontSize: "20px",
+      cursor: "pointer",
+      color: "#666",
+      lineHeight: 1,
     },
     list: {
       paddingLeft: "20px",
@@ -48,7 +64,12 @@ function Whiteboard({ data }) {
 
   return (
     <div style={styles.board}>
-      <div style={styles.title}>{data.title}</div>
+      <div style={styles.header}>
+        <div style={styles.title}>{data.title}</div>
+        <button style={styles.closeBtn} onClick={onClose}>
+          ×
+        </button>
+      </div>
 
       {data.type === "list" ? (
         <ul style={styles.list}>

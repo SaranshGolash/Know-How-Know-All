@@ -109,6 +109,8 @@ function AITeacher() {
     "// Write your code here....."
   );
   const [whiteboardData, setWhiteboardData] = useState(null);
+  const [showWhiteboard, setShowWhiteboard] = useState(false);
+  const [hasNewNotes, setHasNewNotes] = useState(false);
 
   // QUIZ STATE VARIABLES
   const [quizData, setQuizData] = useState(null);
@@ -142,6 +144,7 @@ function AITeacher() {
         setIsLoadingQuiz(false); // Stop loading if AI talks instead of quitting
         if (data.visual) {
           setWhiteboardData(data.visual);
+          setHasNewNotes(true);
         }
       }
       // Handle Quiz Data
@@ -344,6 +347,30 @@ function AITeacher() {
     },
     activeBtn: { background: "#2E4F21", color: "#a0f1bd" },
     endBtn: { background: "#d93025" },
+    hudButtonStyle: {
+      padding: "10px 20px",
+      borderRadius: "8px",
+      border: "none",
+      background: "rgba(0,0,0,0.5)",
+      color: "#fff",
+      cursor: "pointer",
+      marginRight: "10px",
+      position: "relative", // For the notification dot
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+    },
+
+    notificationDotStyle: {
+      position: "absolute",
+      top: "-5px",
+      right: "-5px",
+      width: "12px",
+      height: "12px",
+      backgroundColor: "#ff4444",
+      borderRadius: "50%",
+      border: "2px solid #fff",
+    },
   };
 
   return (
@@ -411,7 +438,12 @@ function AITeacher() {
 
       <div style={styles.aiSection}>
         <video ref={aiVideoRef} loop muted playsInline style={styles.aiVideo} />
-        {whiteboardData && <Whiteboard data={whiteboardData} />}
+        {showWhiteboard && whiteboardData && (
+          <Whiteboard
+            data={whiteboardData}
+            onClose={() => setShowWhiteboard(false)}
+          />
+        )}
         <div style={styles.hud}>
           <div style={styles.aiText}>
             <strong>AI Teacher:</strong> {aiMessage}
@@ -451,6 +483,17 @@ function AITeacher() {
               title="Take a Quiz"
             >
               {isLoadingQuiz ? "..." : <QuizIcon />}
+            </button>
+
+            <button
+              style={styles.hudButtonStyle}
+              onClick={() => {
+                setShowWhiteboard(!showWhiteboard);
+                setHasNewNotes(false);
+              }}
+            >
+              📝 Notes
+              {hasNewNotes && <span style={styles.notificationDotStyle}></span>}
             </button>
 
             <button
