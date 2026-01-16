@@ -111,6 +111,7 @@ function AITeacher() {
   const [whiteboardData, setWhiteboardData] = useState(null);
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [hasNewNotes, setHasNewNotes] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // QUIZ STATE VARIABLES
   const [quizData, setQuizData] = useState(null);
@@ -201,6 +202,9 @@ function AITeacher() {
   const speak = (text) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice =
       voices.find((v) => v.name.includes("Google US English")) || voices[0];
@@ -208,6 +212,14 @@ function AITeacher() {
     utterance.onstart = () => setAiState("speaking");
     utterance.onend = () => setAiState("idle");
     window.speechSynthesis.speak(utterance);
+  };
+
+  const handleInterrupt = () => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({ type: "interrupt" }));
+    }
   };
 
   const autoInterval = useRef(null);
@@ -371,6 +383,21 @@ function AITeacher() {
       borderRadius: "50%",
       border: "2px solid #fff",
     },
+    interruptBtnStyle: {
+      padding: "10px 20px",
+      borderRadius: "8px",
+      border: "none",
+      // Red when speaking to indicate "STOP", Grey when silent
+      background: isSpeaking ? "#ff4444" : "rgba(0,0,0,0.5)",
+      color: "#fff",
+      cursor: isSpeaking ? "pointer" : "default", // Only clickable when speaking
+      marginRight: "10px",
+      opacity: isSpeaking ? 1 : 0.5, // Fade out when not needed
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      transition: "all 0.2s ease",
+    },
   };
 
   return (
@@ -494,6 +521,14 @@ function AITeacher() {
             >
               📝 Notes
               {hasNewNotes && <span style={styles.notificationDotStyle}></span>}
+            </button>
+
+            <button
+              style={styles.interruptBtnStyle}
+              onClick={handleInterrupt}
+              disabled={!isSpeaking}
+            >
+              ✋ {isSpeaking ? "Stop" : "Silent"}
             </button>
 
             <button

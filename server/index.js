@@ -297,7 +297,7 @@ wss.on("connection", (ws) => {
     try {
       const data = JSON.parse(message);
 
-      // Initialize Chat with Context if it is the first message
+      // 1. INITIALIZATION
       if (data.type === "init") {
         chatSession = model.startChat({
           history: [
@@ -320,24 +320,6 @@ wss.on("connection", (ws) => {
                   }
 
                   If you don't need a visual aid for a specific response, set "visual_aid" to null.
-                  
-                  Example 1 (List):
-                  {
-                    "speech": "To learn React, you need to understand three core concepts.",
-                    "visual_aid": { "title": "React Basics", "type": "list", "content": ["Components", "Props", "State"] }
-                  }
-
-                  Example 2 (Code):
-                  {
-                    "speech": "Here is how you define a function in JavaScript.",
-                    "visual_aid": { "title": "JS Function", "type": "code", "content": "function hello() { return 'hi'; }" }
-                  }
-
-                  Example 3 (Conversation):
-                  {
-                    "speech": "That is a great question! Let me explain.",
-                    "visual_aid": null
-                  }
                   `,
                 },
               ],
@@ -349,36 +331,48 @@ wss.on("connection", (ws) => {
         );
       }
 
-      // Handle Live Frame/Audio/Code Data
-      else if (
-        (data.type === "stream" || data.type === "quiz") &&
-        chatSession
-      ) {
+      // 2. QUIZ HANDLING (Separate Logic)
+      else if (data.type === "quiz" && chatSession) {
+        const promptText = `Generate 3 multiple-choice questions about ${data.courseTitle}. 
+            CRITICAL: Return ONLY a raw JSON array. No markdown code blocks. No intro text.
+            Format: [{"id": 1, "question": "...", "options": ["A", "B", "C", "D"], "answer": "The correct string"}]`;
+
+        const result = await chatSession.sendMessage([{ text: promptText }]);
+        let responseText = result.response.text();
+
+        // Clean up
+        responseText = responseText
+          .replace(/```json/g, "")
+          .replace(/```/g, "")
+          .trim();
+
+        ws.send(
+          JSON.stringify({
+            type: "quiz_data",
+            data: JSON.parse(responseText),
+          })
+        );
+      }
+
+      // 3. STREAM / CHAT HANDLING (Separate Logic)
+      else if (data.type === "stream" && chatSession) {
         let promptText = data.prompt;
 
-        // ✅ NEW: Handle Code Context
-        // If the frontend sent code from the editor, attach it to the prompt
+        // Handle Code Context
         if (data.code) {
           promptText += `\n\n[STUDENT'S CURRENT CODE]:\n\`\`\`javascript\n${data.code}\n\`\`\`\n(Note: The user is writing this code right now. Use this context to answer their questions or point out syntax errors.)`;
         }
 
-        // 1. If it's a Quiz Request, force JSON format (Overrides the prompt)
-        if (data.type === "quiz") {
-          promptText = `Generate 3 multiple-choice questions about ${data.courseTitle}. 
-            CRITICAL: Return ONLY a raw JSON array. No markdown code blocks. No intro text.
-            Format: [{"id": 1, "question": "...", "options": ["A", "B", "C", "D"], "answer": "The correct string"}]`;
-        }
-
-        // 2. Send to Gemini
+        // Send to Gemini
         const result = await chatSession.sendMessage([
           { text: promptText },
-          // Only attach image if provided (quizzes usually don't need the camera)
           ...(data.image
             ? [{ inlineData: { mimeType: "image/jpeg", data: data.image } }]
             : []),
         ]);
 
         let responseText = result.response.text();
+        // Clean up markdown just in case
         responseText = responseText
           .replace(/```json/g, "")
           .replace(/```/g, "")
@@ -389,16 +383,17 @@ wss.on("connection", (ws) => {
           const aiData = JSON.parse(responseText);
 
           // Send structured data to frontend
+          // 'text' is ONLY the speech part, so the AI won't read the keys
           ws.send(
             JSON.stringify({
               type: "ai_response",
-              text: aiData.speech, // For TTS
-              visual: aiData.visual_aid, // For Whiteboard
+              text: aiData.speech, // ✅ TTS reads only this
+              visual: aiData.visual_aid, // ✅ Frontend displays this
             })
           );
         } catch (e) {
           console.error("Failed to parse AI JSON:", responseText);
-          // Fallback if AI messes up JSON
+          // Fallback: If AI fails to give JSON, just speak the raw text
           ws.send(
             JSON.stringify({
               type: "ai_response",
@@ -406,23 +401,6 @@ wss.on("connection", (ws) => {
               visual: null,
             })
           );
-        }
-
-        if (data.type === "quiz") {
-          responseText = responseText
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .trim();
-          // Send back as a special 'quiz_data' type
-          ws.send(
-            JSON.stringify({
-              type: "quiz_data",
-              data: JSON.parse(responseText),
-            })
-          );
-        } else {
-          // Standard chat response
-          ws.send(JSON.stringify({ type: "ai_response", text: responseText }));
         }
       }
     } catch (error) {
