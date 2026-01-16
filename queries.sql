@@ -17,3 +17,12 @@ CREATE TABLE purchases (
 
 ALTER TABLE users ADD COLUMN xp_points INT DEFAULT 0;
 ALTER TABLE users ADD COLUMN current_streak INT DEFAULT 0;
+
+CREATE TABLE user_progress (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    course_title VARCHAR(255),
+    summary_text TEXT,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, course_title)
+);
