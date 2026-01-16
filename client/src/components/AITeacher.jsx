@@ -104,6 +104,9 @@ function AITeacher() {
   const [isAutoMode, setIsAutoMode] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [showCode, setShowCode] = useState(false);
+  const [currentCode, setCurrentCode] = useState(
+    "// Write your code here....."
+  );
 
   // QUIZ STATE VARIABLES
   const [quizData, setQuizData] = useState(null);
@@ -214,21 +217,26 @@ function AITeacher() {
     return () => clearInterval(autoInterval.current);
   }, [isAutoMode]);
 
-  const captureAndSend = useCallback((promptText) => {
-    if (webcamRef.current && ws.current?.readyState === WebSocket.OPEN) {
-      const imageSrc = webcamRef.current.getScreenshot();
-      if (imageSrc) {
-        const base64Data = imageSrc.split(",")[1];
+  const captureAndSend = useCallback(
+    (promptText) => {
+      if (webcamRef.current && ws.current?.readyState === WebSocket.OPEN) {
+        let base64Data = "";
+        if (webcamRef.current) {
+          const imageSrc = webcamRef.current.getScreenshot();
+          if (imageSrc) base64Data = imageSrc.split(",")[1];
+        }
         ws.current.send(
           JSON.stringify({
             type: "stream",
             image: base64Data,
+            code: showCode ? currentCode : null,
             prompt: promptText,
           })
         );
       }
-    }
-  }, []);
+    },
+    [showCode, currentCode]
+  );
 
   const handleSend = (text) => {
     if (!text) return;
@@ -387,7 +395,11 @@ function AITeacher() {
               background: "#1e1e1e",
             }}
           >
-            <CodeEditor onClose={() => setShowCode(false)} />
+            <CodeEditor
+              code={currentCode}
+              setCode={setCurrentCode}
+              onClose={() => setShowCode(false)}
+            />
           </div>
         )}
       </div>

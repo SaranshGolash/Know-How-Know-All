@@ -1,10 +1,7 @@
 import React, { useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
 
-function CodeEditor({ onClose }) {
-  const [code, setCode] = useState(
-    "// Write your JavaScript here\nconsole.log('Hello from the AI Class!');\n\nconst sum = (a, b) => a + b;\nconsole.log(sum(5, 10));"
-  );
+function CodeEditor({ onClose, code, setCode }) {
   const [output, setOutput] = useState([]);
   const [error, setError] = useState(null);
 

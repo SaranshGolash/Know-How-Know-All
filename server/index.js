@@ -306,13 +306,13 @@ wss.on("connection", (ws) => {
               parts: [
                 {
                   text: `You are an AI Video Tutor for: ${data.courseTitle}. 
-                    
-                    IMPORTANT INSTRUCTIONS:
-                    1. You are speaking in a video call. Keep answers SHORT and conversational (1-2 sentences).
-                    2. Do not use markdown (no **bold** or # headings), just plain text.
-                    3. If the user shows code, correct it briefly.
-                    4. Be encouraging and energetic.
-                    `,
+                  
+                  IMPORTANT INSTRUCTIONS:
+                  1. You are speaking in a video call. Keep answers SHORT and conversational (1-2 sentences).
+                  2. Do not use markdown (no **bold** or # headings), just plain text.
+                  3. If the user shows code (either on camera or via the code editor), correct it briefly and explain the fix.
+                  4. Be encouraging and energetic.
+                  `,
                 },
               ],
             },
@@ -323,14 +323,20 @@ wss.on("connection", (ws) => {
         );
       }
 
-      // Handle Live Frame/Audio Data
+      // Handle Live Frame/Audio/Code Data
       else if (
         (data.type === "stream" || data.type === "quiz") &&
         chatSession
       ) {
         let promptText = data.prompt;
 
-        // 1. If it's a Quiz Request, force JSON format
+        // ✅ NEW: Handle Code Context
+        // If the frontend sent code from the editor, attach it to the prompt
+        if (data.code) {
+          promptText += `\n\n[STUDENT'S CURRENT CODE]:\n\`\`\`javascript\n${data.code}\n\`\`\`\n(Note: The user is writing this code right now. Use this context to answer their questions or point out syntax errors.)`;
+        }
+
+        // 1. If it's a Quiz Request, force JSON format (Overrides the prompt)
         if (data.type === "quiz") {
           promptText = `Generate 3 multiple-choice questions about ${data.courseTitle}. 
             CRITICAL: Return ONLY a raw JSON array. No markdown code blocks. No intro text.
