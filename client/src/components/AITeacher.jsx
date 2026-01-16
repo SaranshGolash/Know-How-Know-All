@@ -1,6 +1,13 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+} from "react";
 import Webcam from "react-webcam";
 import { useLocation, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import QuizModal from "./OuizModal";
 import CodeEditor from "./CodeEditor";
 import Whiteboard from "./Whiteboard";
@@ -91,6 +98,7 @@ const CodeIcon = () => (
 function AITeacher() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const course = location.state?.course;
 
   // --- HOOKS ---
@@ -130,7 +138,11 @@ function AITeacher() {
       console.log("✅ WebSocket Connected");
       if (socket.readyState === WebSocket.OPEN) {
         socket.send(
-          JSON.stringify({ type: "init", courseTitle: course.course_title })
+          JSON.stringify({
+            type: "init",
+            courseTitle: course.course_title,
+            userId: user?.id,
+          })
         );
       }
     };
@@ -147,7 +159,11 @@ function AITeacher() {
           setWhiteboardData(data.visual);
           setHasNewNotes(true);
         }
+      } else if (data.type === "error") {
+        setAiMessage(`${data.text}`);
+        setIsLoadingQuiz(false);
       }
+
       // Handle Quiz Data
       else if (data.type === "quiz_data") {
         setQuizData(data.data);
@@ -177,7 +193,7 @@ function AITeacher() {
       window.speechSynthesis.cancel();
       if (isAutoMode) clearInterval(autoInterval.current);
     };
-  }, [course]);
+  }, [course, user]);
 
   // VIDEO HANDLING
   useEffect(() => {
@@ -239,6 +255,22 @@ function AITeacher() {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ type: "interrupt" }));
     }
+  };
+
+  const handleEndCall = () => {
+    handleInterrupt();
+
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(
+        JSON.stringify({
+          type: "session_end",
+          userId: user?.id,
+          courseTitle: course.course_title,
+        })
+      );
+    }
+
+    navigate("/my-learning");
   };
 
   const autoInterval = useRef(null);
@@ -552,7 +584,7 @@ function AITeacher() {
 
             <button
               style={{ ...styles.btn, ...styles.endBtn }}
-              onClick={() => navigate("/my-learning")}
+              onClick={handleEndCall}
             >
               <PhoneIcon />
             </button>

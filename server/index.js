@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { WebSocketServer } = require("ws");
 require("dotenv").config();
-const db = require("./config/db");
+const db = require("./db");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
@@ -285,48 +285,143 @@ app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// WEBSOCKET SERVER (For AI Teacher)
+function cleanAndParseJSON(text) {
+  try {
+    let clean = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    return JSON.parse(clean);
+  } catch (e) {
+    const firstCurly = text.indexOf("{");
+
+    const firstSquare = text.indexOf("[");
+
+    let startIndex = -1;
+
+    let endIndex = -1;
+
+    // Determine if looking for an Object {} or Array []
+
+    if (firstCurly !== -1 && (firstSquare === -1 || firstCurly < firstSquare)) {
+      startIndex = firstCurly;
+
+      endIndex = text.lastIndexOf("}");
+    } else if (firstSquare !== -1) {
+      startIndex = firstSquare;
+
+      endIndex = text.lastIndexOf("]");
+    }
+
+    if (startIndex !== -1 && endIndex !== -1) {
+      try {
+        const jsonString = text.substring(startIndex, endIndex + 1);
+
+        return JSON.parse(jsonString);
+      } catch (e2) {
+        console.error("JSON Extraction Failed:", e2);
+
+        return null;
+      }
+    }
+
+    return null;
+  }
+}
+
 const wss = new WebSocketServer({ port: 8080 });
 
 wss.on("connection", (ws) => {
-  console.log("Client connected to AI Teacher");
+  console.log("🔌 Client connected to AI Teacher");
 
   const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
+
   let chatSession = null;
+  let isInitializing = false;
 
   ws.on("message", async (message) => {
     try {
       const data = JSON.parse(message);
 
-      // 1. INITIALIZATION
       if (data.type === "init") {
+        if (isInitializing) return; // Prevent double-init
+
+        isInitializing = true;
+
+        console.log(
+          `🚀 Init Session for User: ${data.userId} | Course: ${data.courseTitle}`
+        );
+
         let previousContext = "This is the first session.";
-        try {
-          const result = await db.query(
-            "SELECT summary_text FROM user_progress WHERE user_id = $1 AND course_title = $2",
-            [data.userId, data.courseTitle]
-          );
-          if (result.rows.length > 0) {
-            previousContext = result.rows[0].summary_text;
+
+        if (data.userId) {
+          try {
+            const result = await pool.query(
+              "SELECT summary_text FROM user_progress WHERE user_id = $1 AND course_title = $2",
+
+              [data.userId, data.courseTitle]
+            );
+
+            if (result.rows.length > 0) {
+              previousContext = result.rows[0].summary_text;
+
+              console.log("📚 Memory Loaded:", previousContext);
+            } else {
+              console.log("🆕 No previous memory found.");
+            }
+          } catch (err) {
+            console.error("⚠️ DB Error fetching context:", err.message);
           }
-        } catch (err) {
-          console.log("DB Error fetching context:", err);
         }
+
+        // START CHAT SESSION
+
         chatSession = model.startChat({
           history: [
             {
               role: "user",
+
               parts: [
                 {
                   text: `You are an AI Video Tutor for: ${data.courseTitle}. 
+
                   
-                  MEMORY OF PREVIOUS SESSION:
-                  "${previousContext}"
+
+                  MEMORY OF PREVIOUS SESSION: "${previousContext}"
+
+
 
                   INSTRUCTIONS:
-                  1. If this is a new student, welcome them.
-                  2. If there is previous memory, welcome them back, briefly mention what was covered last time (in 1 sentence), and propose the next topic.
-                  3. Always respond in valid JSON format as defined previously.
+
+                  1. Welcome the student. If memory exists, mention where we left off.
+
+                  2. Keep speech CONCISE (1-2 sentences).
+
+                  3. CRITICAL: You must ALWAYS respond in valid JSON format.
+
+                  
+
+                  JSON FORMAT:
+
+                  {
+
+                    "speech": "Text to speak",
+
+                    "visual_aid": {
+
+                       "title": "Topic Title",
+
+                       "type": "list" (OR "code"),
+
+                       "content": ["Point 1", "Point 2"] (OR "console.log('code')")
+
+                    }
+
+                  }
+
+                  If no visual aid is needed, set "visual_aid": null.
+
                   `,
                 },
               ],
@@ -334,127 +429,182 @@ wss.on("connection", (ws) => {
           ],
         });
 
-        const greetingResult = await chatSession.sendMessage(
-          "Start the session now."
-        );
-        const greetingText = greetingResult.response
-          .text()
-          .replace(/```json/g, "")
-          .replace(/```/g, "")
-          .trim();
-        const greetingJson = JSON.parse(greetingText);
-
-        ws.send(
-          JSON.stringify({
-            type: "ai_response",
-            text: greetingJson.speech,
-            visual: greetingJson.visual_aid,
-          })
-        );
-      }
-
-      // SESSION END
-      else if (data.type === "session_end" && chatSession) {
-        console.log("Summarizing session...");
-
-        // Ask Gemini to summarize the chat
-        const summaryPrompt =
-          "The session is ending. Generate a concise 2-3 sentence summary of exactly what topics we covered today and what the student struggled with. Return ONLY the text.";
-        const result = await chatSession.sendMessage(summaryPrompt);
-        const newSummary = result.response.text();
-
-        // Save to Database (Upsert: Update if exists, Insert if new)
-        try {
-          await db.query(
-            `INSERT INTO user_progress (user_id, course_title, summary_text)
-                 VALUES ($1, $2, $3)
-                 ON CONFLICT (user_id, course_title) 
-                 DO UPDATE SET summary_text = $3, last_updated = CURRENT_TIMESTAMP`,
-            [data.userId, data.courseTitle, newSummary]
-          );
-          console.log("Progress saved.");
-        } catch (err) {
-          console.error("Failed to save progress:", err);
-        }
-      }
-
-      // QUIZ HANDLING
-      else if (data.type === "quiz" && chatSession) {
-        const promptText = `Generate 3 multiple-choice questions about ${data.courseTitle}. 
-            CRITICAL: Return ONLY a raw JSON array. No markdown code blocks. No intro text.
-            Format: [{"id": 1, "question": "...", "options": ["A", "B", "C", "D"], "answer": "The correct string"}]`;
-
-        const result = await chatSession.sendMessage([{ text: promptText }]);
-        let responseText = result.response.text();
-
-        // Clean up
-        responseText = responseText
-          .replace(/```json/g, "")
-          .replace(/```/g, "")
-          .trim();
-
-        ws.send(
-          JSON.stringify({
-            type: "quiz_data",
-            data: JSON.parse(responseText),
-          })
-        );
-      }
-
-      // STREAM / CHAT HANDLING
-      else if (data.type === "stream" && chatSession) {
-        let promptText = data.prompt;
-
-        // Handle Code Context
-        if (data.code) {
-          promptText += `\n\n[STUDENT'S CURRENT CODE]:\n\`\`\`javascript\n${data.code}\n\`\`\`\n(Note: The user is writing this code right now. Use this context to answer their questions or point out syntax errors.)`;
-        }
-
-        // Send to Gemini
-        const result = await chatSession.sendMessage([
-          { text: promptText },
-          ...(data.image
-            ? [{ inlineData: { mimeType: "image/jpeg", data: data.image } }]
-            : []),
-        ]);
-
-        let responseText = result.response.text();
-        // Clean up markdown just in case
-        responseText = responseText
-          .replace(/```json/g, "")
-          .replace(/```/g, "")
-          .trim();
+        // GENERATE GREETING
 
         try {
-          // Parse the AI's JSON response
-          const aiData = JSON.parse(responseText);
+          const result = await chatSession.sendMessage("Start the session.");
 
-          // Send structured data to frontend
-          // 'text' is ONLY the speech part, so the AI won't read the keys
-          ws.send(
-            JSON.stringify({
-              type: "ai_response",
-              text: aiData.speech, // ✅ TTS reads only this
-              visual: aiData.visual_aid, // ✅ Frontend displays this
-            })
-          );
+          const text = result.response.text();
+          const jsonResponse = cleanAndParseJSON(text);
+
+          if (jsonResponse) {
+            ws.send(
+              JSON.stringify({
+                type: "ai_response",
+
+                text: jsonResponse.speech,
+
+                visual: jsonResponse.visual_aid,
+              })
+            );
+          } else {
+            // Fallback if AI messes up JSON (Fixes Silence)
+
+            console.warn("⚠️ Init JSON Parsing Failed, sending raw text.");
+
+            ws.send(
+              JSON.stringify({
+                type: "ai_response",
+
+                text: text,
+
+                visual: null,
+              })
+            );
+          }
         } catch (e) {
-          console.error("Failed to parse AI JSON:", responseText);
-          // Fallback: If AI fails to give JSON, just speak the raw text
+          console.error("❌ Init Generation Error:", e);
+
           ws.send(
             JSON.stringify({
               type: "ai_response",
-              text: responseText,
+              text: "Hello! I am ready to teach.",
               visual: null,
             })
           );
         }
+
+        isInitializing = false; // Reset lock
+      } else if (data.type === "stream" && chatSession) {
+        let promptText = data.prompt;
+
+        if (data.code) {
+          promptText += `\n\n[STUDENT'S CODE]:\n${data.code}\n(If the user asks for help, check this code for errors.)`;
+        }
+
+        try {
+          const result = await chatSession.sendMessage([
+            { text: promptText },
+
+            ...(data.image
+              ? [{ inlineData: { mimeType: "image/jpeg", data: data.image } }]
+              : []),
+          ]);
+
+          const text = result.response.text();
+
+          const jsonResponse = cleanAndParseJSON(text);
+
+          if (jsonResponse) {
+            ws.send(
+              JSON.stringify({
+                type: "ai_response",
+
+                text: jsonResponse.speech,
+
+                visual: jsonResponse.visual_aid,
+              })
+            );
+          } else {
+            ws.send(
+              JSON.stringify({
+                type: "ai_response",
+
+                text: text,
+
+                visual: null,
+              })
+            );
+          }
+        } catch (err) {
+          console.error("❌ Stream Error:", err);
+
+          ws.send(
+            JSON.stringify({
+              type: "ai_response",
+              text: "I didn't quite catch that.",
+              visual: null,
+            })
+          );
+        }
+      } else if (data.type === "quiz" && chatSession) {
+        console.log("📝 Generating Quiz...");
+
+        const promptText = `Generate 3 multiple-choice questions about ${data.courseTitle}. 
+
+            CRITICAL: Return ONLY a raw JSON array. 
+
+            Format: [{"id": 1, "question": "...", "options": ["A", "B", "C", "D"], "answer": "The correct string"}]`;
+
+        try {
+          const result = await chatSession.sendMessage(promptText);
+          const text = result.response.text();
+          const quizArray = cleanAndParseJSON(text);
+
+          if (quizArray && Array.isArray(quizArray)) {
+            ws.send(
+              JSON.stringify({
+                type: "quiz_data",
+
+                data: quizArray,
+              })
+            );
+
+            console.log("✅ Quiz Sent to Client");
+          } else {
+            console.error("❌ Quiz JSON Invalid:", text);
+
+            ws.send(
+              JSON.stringify({
+                type: "error",
+                text: "I couldn't generate a quiz right now.",
+              })
+            );
+          }
+        } catch (e) {
+          console.error("❌ Quiz Generation Error:", e);
+
+          ws.send(
+            JSON.stringify({ type: "error", text: "Quiz generation failed." })
+          );
+        }
+      } else if (data.type === "session_end" && chatSession) {
+        console.log("💾 Saving Session Memory...");
+
+        const summaryPrompt =
+          "The session is ending. Summarize what we covered in 2 sentences. Return ONLY text.";
+
+        try {
+          const result = await chatSession.sendMessage(summaryPrompt);
+
+          const newSummary = result.response.text();
+
+          if (data.userId) {
+            await pool.query(
+              `INSERT INTO user_progress (user_id, course_title, summary_text)
+
+                     VALUES ($1, $2, $3)
+
+                     ON CONFLICT (user_id, course_title) 
+
+                     DO UPDATE SET summary_text = $3, last_updated = CURRENT_TIMESTAMP`,
+
+              [data.userId, data.courseTitle, newSummary]
+            );
+
+            console.log("✅ Memory Saved:", newSummary);
+          }
+        } catch (err) {
+          console.error("❌ Save Memory Error:", err.message);
+        }
+      } else if (data.type === "interrupt") {
+        console.log("✋ User Interrupted");
       }
     } catch (error) {
-      console.error("AI Error:", error);
-      ws.send(JSON.stringify({ type: "error", text: "AI is thinking..." }));
+      console.error("🔥 Server Error:", error);
+
+      ws.send(JSON.stringify({ type: "error", text: "Internal Server Error" }));
     }
   });
 });
-
-console.log("WebSocket Server running on port 8080");
+console.log("✅ WebSocket Server running on port 8080");
