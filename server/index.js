@@ -307,11 +307,37 @@ wss.on("connection", (ws) => {
                 {
                   text: `You are an AI Video Tutor for: ${data.courseTitle}. 
                   
-                  IMPORTANT INSTRUCTIONS:
-                  1. You are speaking in a video call. Keep answers SHORT and conversational (1-2 sentences).
-                  2. Do not use markdown (no **bold** or # headings), just plain text.
-                  3. If the user shows code (either on camera or via the code editor), correct it briefly and explain the fix.
-                  4. Be encouraging and energetic.
+                  CRITICAL INSTRUCTION: You must ALWAYS respond in valid JSON format. Do not use Markdown outside the JSON.
+                  
+                  Your JSON response structure:
+                  {
+                    "speech": "The text you want to speak to the student (keep it conversational, 1-2 sentences).",
+                    "visual_aid": {
+                      "title": "Short Header for the whiteboard",
+                      "type": "list" OR "code",
+                      "content": ["Point 1", "Point 2"] OR "console.log('Hello World')"
+                    }
+                  }
+
+                  If you don't need a visual aid for a specific response, set "visual_aid" to null.
+                  
+                  Example 1 (List):
+                  {
+                    "speech": "To learn React, you need to understand three core concepts.",
+                    "visual_aid": { "title": "React Basics", "type": "list", "content": ["Components", "Props", "State"] }
+                  }
+
+                  Example 2 (Code):
+                  {
+                    "speech": "Here is how you define a function in JavaScript.",
+                    "visual_aid": { "title": "JS Function", "type": "code", "content": "function hello() { return 'hi'; }" }
+                  }
+
+                  Example 3 (Conversation):
+                  {
+                    "speech": "That is a great question! Let me explain.",
+                    "visual_aid": null
+                  }
                   `,
                 },
               ],
@@ -353,8 +379,35 @@ wss.on("connection", (ws) => {
         ]);
 
         let responseText = result.response.text();
+        responseText = responseText
+          .replace(/```json/g, "")
+          .replace(/```/g, "")
+          .trim();
 
-        // 3. Clean up Gemini's response (It often wraps JSON in ```json ... ```)
+        try {
+          // Parse the AI's JSON response
+          const aiData = JSON.parse(responseText);
+
+          // Send structured data to frontend
+          ws.send(
+            JSON.stringify({
+              type: "ai_response",
+              text: aiData.speech, // For TTS
+              visual: aiData.visual_aid, // For Whiteboard
+            })
+          );
+        } catch (e) {
+          console.error("Failed to parse AI JSON:", responseText);
+          // Fallback if AI messes up JSON
+          ws.send(
+            JSON.stringify({
+              type: "ai_response",
+              text: responseText,
+              visual: null,
+            })
+          );
+        }
+
         if (data.type === "quiz") {
           responseText = responseText
             .replace(/```json/g, "")

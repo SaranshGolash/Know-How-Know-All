@@ -3,6 +3,7 @@ import Webcam from "react-webcam";
 import { useLocation, useNavigate } from "react-router-dom";
 import QuizModal from "./OuizModal";
 import CodeEditor from "./CodeEditor";
+import Whiteboard from "./Whiteboard";
 
 // ICONS
 const MicIcon = () => (
@@ -107,6 +108,7 @@ function AITeacher() {
   const [currentCode, setCurrentCode] = useState(
     "// Write your code here....."
   );
+  const [whiteboardData, setWhiteboardData] = useState(null);
 
   // QUIZ STATE VARIABLES
   const [quizData, setQuizData] = useState(null);
@@ -138,6 +140,9 @@ function AITeacher() {
         setAiMessage(data.text);
         speak(data.text);
         setIsLoadingQuiz(false); // Stop loading if AI talks instead of quitting
+        if (data.visual) {
+          setWhiteboardData(data.visual);
+        }
       }
       // Handle Quiz Data
       else if (data.type === "quiz_data") {
@@ -406,6 +411,7 @@ function AITeacher() {
 
       <div style={styles.aiSection}>
         <video ref={aiVideoRef} loop muted playsInline style={styles.aiVideo} />
+        {whiteboardData && <Whiteboard data={whiteboardData} />}
         <div style={styles.hud}>
           <div style={styles.aiText}>
             <strong>AI Teacher:</strong> {aiMessage}
