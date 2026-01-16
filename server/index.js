@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { WebSocketServer } = require("ws");
 require("dotenv").config();
+const db = require("./config/db");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
@@ -299,6 +300,18 @@ wss.on("connection", (ws) => {
 
       // 1. INITIALIZATION
       if (data.type === "init") {
+        let previousContext = "This is the first session.";
+        try {
+          const result = await db.query(
+            "SELECT summary_text FROM user_progress WHERE user_id = $1 AND course_title = $2",
+            [data.userId, data.courseTitle]
+          );
+          if (result.rows.length > 0) {
+            previousContext = result.rows[0].summary_text;
+          }
+        } catch (err) {
+          console.log("DB Error fetching context:", err);
+        }
         chatSession = model.startChat({
           history: [
             {
@@ -307,31 +320,65 @@ wss.on("connection", (ws) => {
                 {
                   text: `You are an AI Video Tutor for: ${data.courseTitle}. 
                   
-                  CRITICAL INSTRUCTION: You must ALWAYS respond in valid JSON format. Do not use Markdown outside the JSON.
-                  
-                  Your JSON response structure:
-                  {
-                    "speech": "The text you want to speak to the student (keep it conversational, 1-2 sentences).",
-                    "visual_aid": {
-                      "title": "Short Header for the whiteboard",
-                      "type": "list" OR "code",
-                      "content": ["Point 1", "Point 2"] OR "console.log('Hello World')"
-                    }
-                  }
+                  MEMORY OF PREVIOUS SESSION:
+                  "${previousContext}"
 
-                  If you don't need a visual aid for a specific response, set "visual_aid" to null.
+                  INSTRUCTIONS:
+                  1. If this is a new student, welcome them.
+                  2. If there is previous memory, welcome them back, briefly mention what was covered last time (in 1 sentence), and propose the next topic.
+                  3. Always respond in valid JSON format as defined previously.
                   `,
                 },
               ],
             },
           ],
         });
+
+        const greetingResult = await chatSession.sendMessage(
+          "Start the session now."
+        );
+        const greetingText = greetingResult.response
+          .text()
+          .replace(/```json/g, "")
+          .replace(/```/g, "")
+          .trim();
+        const greetingJson = JSON.parse(greetingText);
+
         ws.send(
-          JSON.stringify({ type: "ready", text: "I am ready to teach!" })
+          JSON.stringify({
+            type: "ai_response",
+            text: greetingJson.speech,
+            visual: greetingJson.visual_aid,
+          })
         );
       }
 
-      // 2. QUIZ HANDLING (Separate Logic)
+      // SESSION END
+      else if (data.type === "session_end" && chatSession) {
+        console.log("Summarizing session...");
+
+        // Ask Gemini to summarize the chat
+        const summaryPrompt =
+          "The session is ending. Generate a concise 2-3 sentence summary of exactly what topics we covered today and what the student struggled with. Return ONLY the text.";
+        const result = await chatSession.sendMessage(summaryPrompt);
+        const newSummary = result.response.text();
+
+        // Save to Database (Upsert: Update if exists, Insert if new)
+        try {
+          await db.query(
+            `INSERT INTO user_progress (user_id, course_title, summary_text)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT (user_id, course_title) 
+                 DO UPDATE SET summary_text = $3, last_updated = CURRENT_TIMESTAMP`,
+            [data.userId, data.courseTitle, newSummary]
+          );
+          console.log("Progress saved.");
+        } catch (err) {
+          console.error("Failed to save progress:", err);
+        }
+      }
+
+      // QUIZ HANDLING
       else if (data.type === "quiz" && chatSession) {
         const promptText = `Generate 3 multiple-choice questions about ${data.courseTitle}. 
             CRITICAL: Return ONLY a raw JSON array. No markdown code blocks. No intro text.
@@ -354,7 +401,7 @@ wss.on("connection", (ws) => {
         );
       }
 
-      // 3. STREAM / CHAT HANDLING (Separate Logic)
+      // STREAM / CHAT HANDLING
       else if (data.type === "stream" && chatSession) {
         let promptText = data.prompt;
 
