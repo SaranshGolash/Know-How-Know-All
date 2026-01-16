@@ -198,25 +198,44 @@ function AITeacher() {
     }
   }, [aiState]);
 
-  // --- 3. SPEECH & CORE LOGIC ---
+  // Speech logic
   const speak = (text) => {
+    if (!text) return;
+
+    //  Force stop previous audio
     window.speechSynthesis.cancel();
+
+    setIsSpeaking(true);
+    setAiState("speaking");
+
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+
+    // Voice Selection
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice =
       voices.find((v) => v.name.includes("Google US English")) || voices[0];
     if (preferredVoice) utterance.voice = preferredVoice;
-    utterance.onstart = () => setAiState("speaking");
-    utterance.onend = () => setAiState("idle");
+
+    // Handle End of Speech
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setAiState("idle");
+    };
+
+    // Handle Errors
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setAiState("idle");
+    };
+
     window.speechSynthesis.speak(utterance);
   };
 
   const handleInterrupt = () => {
+    window.speechSynthesis.pause();
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
+    setAiState("idle");
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ type: "interrupt" }));
     }
