@@ -18,6 +18,51 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.use(cors());
 app.use(express.json());
 
+function cleanAndParseJSON(text) {
+  try {
+    let clean = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    return JSON.parse(clean);
+  } catch (e) {
+    const firstCurly = text.indexOf("{");
+
+    const firstSquare = text.indexOf("[");
+
+    let startIndex = -1;
+
+    let endIndex = -1;
+
+    // Determine if looking for an Object {} or Array []
+
+    if (firstCurly !== -1 && (firstSquare === -1 || firstCurly < firstSquare)) {
+      startIndex = firstCurly;
+
+      endIndex = text.lastIndexOf("}");
+    } else if (firstSquare !== -1) {
+      startIndex = firstSquare;
+
+      endIndex = text.lastIndexOf("]");
+    }
+
+    if (startIndex !== -1 && endIndex !== -1) {
+      try {
+        const jsonString = text.substring(startIndex, endIndex + 1);
+
+        return JSON.parse(jsonString);
+      } catch (e2) {
+        console.error("JSON Extraction Failed:", e2);
+
+        return null;
+      }
+    }
+
+    return null;
+  }
+}
+
 // AUTHENTICATION ROUTES
 
 // Signup Route
@@ -285,57 +330,13 @@ app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-function cleanAndParseJSON(text) {
-  try {
-    let clean = text
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-
-    return JSON.parse(clean);
-  } catch (e) {
-    const firstCurly = text.indexOf("{");
-
-    const firstSquare = text.indexOf("[");
-
-    let startIndex = -1;
-
-    let endIndex = -1;
-
-    // Determine if looking for an Object {} or Array []
-
-    if (firstCurly !== -1 && (firstSquare === -1 || firstCurly < firstSquare)) {
-      startIndex = firstCurly;
-
-      endIndex = text.lastIndexOf("}");
-    } else if (firstSquare !== -1) {
-      startIndex = firstSquare;
-
-      endIndex = text.lastIndexOf("]");
-    }
-
-    if (startIndex !== -1 && endIndex !== -1) {
-      try {
-        const jsonString = text.substring(startIndex, endIndex + 1);
-
-        return JSON.parse(jsonString);
-      } catch (e2) {
-        console.error("JSON Extraction Failed:", e2);
-
-        return null;
-      }
-    }
-
-    return null;
-  }
-}
-
 const wss = new WebSocketServer({ port: 8080 });
 
 wss.on("connection", (ws) => {
   console.log("🔌 Client connected to AI Teacher");
 
   const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
+  const fasterModel = genAI.getGenerativeModel({model: 'gemini-3-flash-preview'});
 
   let chatSession = null;
   let isInitializing = false;
@@ -377,7 +378,7 @@ wss.on("connection", (ws) => {
 
         // START CHAT SESSION
 
-        chatSession = model.startChat({
+        chatSession = fasterModel.startChat({
           history: [
             {
               role: "user",
@@ -385,44 +386,24 @@ wss.on("connection", (ws) => {
               parts: [
                 {
                   text: `You are an AI Video Tutor for: ${data.courseTitle}. 
+          
+          MEMORY: "${previousContext}"
 
-                  
+          CORE BEHAVIOR:
+          1. **Visual Empathy:** Every time you receive an image frame, analyze the student's facial expression.
+             - If they look **Confused** (frowning, tilting head): Stop and ask "You look unsure. Want me to break that down?"
+             - If they look **Bored** (looking away, resting face on hand): Say "I'm losing you! Let's try a quick quiz to wake up."
+             - If they look **Happy/Nodding**: Say "Great! You're getting it."
+          
+          2. **Teaching Style:** Keep answers SHORT (1-2 sentences). Be energetic.
 
-                  MEMORY OF PREVIOUS SESSION: "${previousContext}"
-
-
-
-                  INSTRUCTIONS:
-
-                  1. Welcome the student. If memory exists, mention where we left off.
-
-                  2. Keep speech CONCISE (1-2 sentences).
-
-                  3. CRITICAL: You must ALWAYS respond in valid JSON format.
-
-                  
-
-                  JSON FORMAT:
-
-                  {
-
-                    "speech": "Text to speak",
-
-                    "visual_aid": {
-
-                       "title": "Topic Title",
-
-                       "type": "list" (OR "code"),
-
-                       "content": ["Point 1", "Point 2"] (OR "console.log('code')")
-
-                    }
-
-                  }
-
-                  If no visual aid is needed, set "visual_aid": null.
-
-                  `,
+          3. **Response Format:** ALWAYS valid JSON.
+          {
+            "speech": "Text to speak",
+            "visual_aid": { ... },
+            "emotion_detected": "confused" | "neutral" | "happy" | "distracted
+          }
+          `,
                 },
               ],
             },
@@ -476,7 +457,12 @@ wss.on("connection", (ws) => {
 
         isInitializing = false; // Reset lock
       } else if (data.type === "stream" && chatSession) {
-        let promptText = data.prompt;
+        let promptText = data.prompt || "Monitoring";
+        promptText += `
+        [SYSTEM INSTRUCTION: Analyze the face in the image. 
+        Detect emotion: 'neutral', 'confused', 'distracted', or 'happy'. 
+        If 'confused' or 'distracted', STOP the lesson content and address the emotion in 'speech'.
+        Return JSON.]`;
 
         if (data.code) {
           promptText += `\n\n[STUDENT'S CODE]:\n${data.code}\n(If the user asks for help, check this code for errors.)`;
@@ -550,9 +536,9 @@ wss.on("connection", (ws) => {
               })
             );
 
-            console.log("✅ Quiz Sent to Client");
+            console.log("Quiz Sent to Client");
           } else {
-            console.error("❌ Quiz JSON Invalid:", text);
+            console.error("Quiz JSON Invalid:", text);
 
             ws.send(
               JSON.stringify({
@@ -562,14 +548,14 @@ wss.on("connection", (ws) => {
             );
           }
         } catch (e) {
-          console.error("❌ Quiz Generation Error:", e);
+          console.error("Quiz Generation Error:", e);
 
           ws.send(
             JSON.stringify({ type: "error", text: "Quiz generation failed." })
           );
         }
       } else if (data.type === "session_end" && chatSession) {
-        console.log("💾 Saving Session Memory...");
+        console.log("Saving Session Memory...");
 
         const summaryPrompt =
           "The session is ending. Summarize what we covered in 2 sentences. Return ONLY text.";
@@ -592,13 +578,13 @@ wss.on("connection", (ws) => {
               [data.userId, data.courseTitle, newSummary]
             );
 
-            console.log("✅ Memory Saved:", newSummary);
+            console.log("Memory Saved:", newSummary);
           }
         } catch (err) {
-          console.error("❌ Save Memory Error:", err.message);
+          console.error("Save Memory Error:", err.message);
         }
       } else if (data.type === "interrupt") {
-        console.log("✋ User Interrupted");
+        console.log("User Interrupted");
       }
     } catch (error) {
       console.error("🔥 Server Error:", error);

@@ -120,6 +120,7 @@ function AITeacher() {
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [hasNewNotes, setHasNewNotes] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [userEmotion, setUserEmotion] = useState("neutral");
 
   // QUIZ STATE VARIABLES
   const [quizData, setQuizData] = useState(null);
@@ -162,6 +163,11 @@ function AITeacher() {
       } else if (data.type === "error") {
         setAiMessage(`${data.text}`);
         setIsLoadingQuiz(false);
+      }
+
+      if (data.emotion) {
+        console.log("Frontend recieved emotion:", data.emotion);
+        setUserEmotion(data.emotion);
       }
 
       // Handle Quiz Data
@@ -449,6 +455,23 @@ function AITeacher() {
       gap: "8px",
       transition: "all 0.2s ease",
     },
+    emotionBadge: {
+      position: 'absolute', 
+      top: '-35px', 
+      left: '50%', 
+      transform: 'translateX(-50%)',
+      background: 'rgba(0,0,0,0.8)',
+      padding: '6px 16px',
+      borderRadius: '20px',
+      color: '#fff',
+      fontSize: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      border: '1px solid #333',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+      zIndex: 20
+      }
   };
 
   return (
@@ -523,6 +546,18 @@ function AITeacher() {
           />
         )}
         <div style={styles.hud}>
+        <div style={styles.emotionBadge}>
+            <span style={{opacity: 0.7}}>AI Perception:</span>
+            <span style={{ 
+                color: userEmotion === 'confused' ? '#ff4444' : 
+                       userEmotion === 'happy' ? '#a0f1bd' : 
+                       userEmotion === 'distracted' ? '#ffeb3b' : '#ccc',
+                fontWeight: 'bold',
+                textTransform: 'uppercase'
+            }}>
+                {userEmotion || "NEUTRAL"}
+            </span>
+          </div>
           <div style={styles.aiText}>
             <strong>AI Teacher:</strong> {aiMessage}
           </div>
