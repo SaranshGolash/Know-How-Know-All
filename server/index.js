@@ -426,6 +426,8 @@ wss.on("connection", (ws) => {
                 text: jsonResponse.speech,
 
                 visual: jsonResponse.visual_aid,
+
+                emotion: jsonResponse.emotion_detected,
               })
             );
           } else {

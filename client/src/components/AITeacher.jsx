@@ -220,6 +220,36 @@ function AITeacher() {
     }
   }, [aiState]);
 
+  // AUDIO NOISE SUPPRESSION
+  useEffect(() => {
+    let audioStream = null;
+
+    const enableAudioEnhancements = async () => {
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+           audioStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
+          });
+          console.log("🎤 Audio enhancements enabled");
+        }
+      } catch (err) {
+        console.error("❌ Failed to enable audio enhancements:", err);
+      }
+    };
+
+    enableAudioEnhancements();
+
+    return () => {
+      if (audioStream) {
+        audioStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
   // Speech logic
   const speak = (text) => {
     if (!text) return;
