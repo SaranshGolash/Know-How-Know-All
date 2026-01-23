@@ -5,27 +5,43 @@ function CodeEditor({ onClose, code, setCode }) {
   const [output, setOutput] = useState([]);
   const [error, setError] = useState(null);
 
-  // Function to execute code safely in the browser
-  const runCode = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Function to execute code via Piston API
+  const runCode = async () => {
+    setIsLoading(true);
     setOutput([]); // Clear previous output
     setError(null);
 
-    const logs = [];
-    const originalLog = console.log;
-
-    console.log = (...args) => {
-      logs.push(args.map((arg) => JSON.stringify(arg)).join(" "));
-      originalLog(...args); // Still log to real console
-    };
-
     try {
-      new Function(code)();
+      const response = await fetch("https://emkc.org/api/v2/piston/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language: "javascript",
+          version: "18.15.0",
+          files: [{ content: code }],
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.run) {
+        // Capture stdout
+        const outputLines = data.run.output ? data.run.output.split("\n") : [];
+        setOutput(outputLines.length > 0 ? outputLines : ["(No output)"]);
+
+        // Capture stderr as error
+        if (data.run.stderr) {
+            setError(data.run.stderr);
+        }
+      } else {
+        setError("Execution failed: No response data");
+      }
     } catch (err) {
-      setError(err.toString());
+      setError("API Error: " + err.message);
     } finally {
-      console.log = originalLog;
-      if (logs.length > 0) setOutput(logs);
-      else if (!error) setOutput(["(No output)"]);
+      setIsLoading(false);
     }
   };
 
@@ -83,8 +99,12 @@ function CodeEditor({ onClose, code, setCode }) {
           JS Playground
         </span>
         <div style={{ display: "flex", gap: "10px" }}>
-          <button style={styles.runBtn} onClick={runCode}>
-            ▶ Run Code
+          <button
+            style={{ ...styles.runBtn, opacity: isLoading ? 0.7 : 1 }}
+            onClick={runCode}
+            disabled={isLoading}
+          >
+            {isLoading ? "⏳ Running..." : "▶ Run Code"}
           </button>
           <button style={styles.closeBtn} onClick={onClose}>
             ✖ Close
