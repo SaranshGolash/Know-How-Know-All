@@ -7,6 +7,6 @@
     "test": "cd client && npm test"
   },
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   }
 }
