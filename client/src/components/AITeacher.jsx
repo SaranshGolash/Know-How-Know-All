@@ -111,7 +111,7 @@ function AITeacher() {
   const [aiState, setAiState] = useState("idle");
   const [aiMessage, setAiMessage] = useState("Hello! I am ready to teach.");
   const [isAutoMode, setIsAutoMode] = useState(false);
-  const [transcript, setTranscript] = useState("");
+
   const [showCode, setShowCode] = useState(false);
   const [currentCode, setCurrentCode] = useState(
     "// Write your code here....."
@@ -188,7 +188,6 @@ function AITeacher() {
       recognition.current.lang = "en-US";
       recognition.current.onresult = (event) => {
         const text = event.results[0][0].transcript;
-        setTranscript(text);
         handleSend(text);
       };
     }
@@ -197,9 +196,9 @@ function AITeacher() {
       if (socket.readyState === WebSocket.OPEN) socket.close();
       ws.current = null;
       window.speechSynthesis.cancel();
-      if (isAutoMode) clearInterval(autoInterval.current);
+      clearInterval(autoInterval.current);
     };
-  }, [course, user]);
+  }, [course, user, handleSend]);
 
   // VIDEO HANDLING
   useEffect(() => {
@@ -314,7 +313,7 @@ function AITeacher() {
     if (isAutoMode) {
       setAiMessage("Watching you work...");
       autoInterval.current = setInterval(() => {
-        captureAndSend(
+        captureAndSendRef.current(
           "I am currently working on this. Briefly guide me if I'm wrong."
         );
       }, 8000);
@@ -345,10 +344,16 @@ function AITeacher() {
     [showCode, currentCode]
   );
 
-  const handleSend = (text) => {
+  // Keep the latest captureAndSend in a ref to avoid effect re-runs
+  const captureAndSendRef = useRef(captureAndSend);
+  useEffect(() => {
+    captureAndSendRef.current = captureAndSend;
+  }, [captureAndSend]);
+
+  const handleSend = useCallback((text) => {
     if (!text) return;
-    captureAndSend(text);
-  };
+    captureAndSendRef.current(text);
+  }, []);
 
   const startListening = () => {
     if (recognition.current) {
