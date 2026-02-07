@@ -52,7 +52,7 @@ function ChatWidget() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { theme, colors } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
 
   const [messages, setMessages] = useState([
     {

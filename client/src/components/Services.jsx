@@ -4,7 +4,7 @@ import { ThemeContext } from "../context/Theme";
 
 function Services() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [isMainBtnHover, setIsMainBtnHover] = useState(false);
+
 
   const { theme } = useContext(ThemeContext);
   const isDark = theme === "dark";
@@ -62,18 +62,7 @@ function Services() {
       lineHeight: "1.5",
       transition: "color 0.3s ease",
     },
-    exploreBtn: {
-      marginTop: "10px",
-      padding: "12px 24px",
-      backgroundColor: isMainBtnHover ? "#7d9276" : "#2e4f21",
-      color: "#fff",
-      border: isDark ? "1px solid #a0f1bd" : "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontWeight: "600",
-      fontSize: "16px",
-      transition: "background-color 0.3s ease",
-    },
+
     servicesCardsGrid: {
       display: "grid",
       gridTemplateColumns: isMobile

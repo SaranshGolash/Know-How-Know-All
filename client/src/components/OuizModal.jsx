@@ -17,9 +17,7 @@ function QuizModal({ questions, onClose }) {
 
     const finishQuiz = async () => {
       setShowResult(true);
-      const finalScore =
-        score +
-        (questions[currentQ].answer === questions[currentQ].options ? 1 : 0);
+
       const xpToAward = 100;
       setXpEarned(xpToAward);
 
