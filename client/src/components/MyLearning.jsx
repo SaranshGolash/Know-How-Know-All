@@ -14,7 +14,7 @@ function MyLearning() {
 
   useEffect(() => {
     if (user?.id) {
-      fetch(`http://localhost:5000/user/purchases/${user.id}`)
+      fetch(`${process.env.REACT_APP_API_URL}/user/purchases/${user.id}`)
         .then((res) => res.json())
         .then((data) => setCourses(data))
         .catch((err) => console.error(err));

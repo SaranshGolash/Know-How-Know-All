@@ -132,7 +132,7 @@ function AITeacher() {
     if (ws.current) return;
 
     console.log("🔌 Connecting to WebSocket...");
-    const socket = new WebSocket("ws://localhost:8080");
+    const socket = new WebSocket(process.env.REACT_APP_WS_URL || "ws://localhost:8080");
     ws.current = socket;
 
     socket.onopen = () => {

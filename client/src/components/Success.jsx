@@ -10,7 +10,7 @@ function Success() {
   useEffect(() => {
     if (sessionId) {
       // Call backend to verify and save to DB
-      fetch("http://localhost:5000/payment-success", {
+      fetch(`${process.env.REACT_APP_API_URL}/payment-success`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId }),

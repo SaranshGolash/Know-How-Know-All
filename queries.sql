@@ -3,7 +3,7 @@ CREATE TABLE users (
 	full_name VARCHAR(255) NOT NULL,
 	email VARCHAR(255) UNIQUE NOT NULL,
 	password_hash VARCHAR(255) NOT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE purchases (
@@ -20,7 +20,7 @@ ALTER TABLE users ADD COLUMN current_streak INT DEFAULT 0;
 
 CREATE TABLE user_progress (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    user_id INTEGER REFERENCES users(user_id),
     course_title VARCHAR(255),
     summary_text TEXT,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

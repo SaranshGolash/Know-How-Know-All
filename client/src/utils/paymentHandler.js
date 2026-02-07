@@ -6,7 +6,7 @@ export const handleCheckout = async (userId, product) => {
 
   try {
     const response = await fetch(
-      "http://localhost:5000/create-checkout-session",
+      `${process.env.REACT_APP_API_URL}/create-checkout-session`,
       {
         method: "POST",
         headers: {

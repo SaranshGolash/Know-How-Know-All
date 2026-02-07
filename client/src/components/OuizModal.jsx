@@ -25,7 +25,7 @@ function QuizModal({ questions, onClose }) {
 
       if (user?.id) {
         try {
-          await fetch("http://localhost:5000/user/add-xp", {
+          await fetch(`${process.env.REACT_APP_API_URL}/user/add-xp`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: user.id, xp: xpToAward }),

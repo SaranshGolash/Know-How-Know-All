@@ -8,7 +8,7 @@ function Leaderboard() {
   const isDark = theme === "dark";
 
   useEffect(() => {
-    fetch("http://localhost:5000/leaderboard")
+    fetch(`${process.env.REACT_APP_API_URL}/leaderboard`)
       .then((res) => res.json())
       .then((data) => setUsers(data))
       .catch((err) => console.error(err));

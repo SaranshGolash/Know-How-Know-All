@@ -15,7 +15,7 @@ function Header() {
 
   useEffect(() => {
     if (user?.id) {
-      fetch(`http://localhost:5000/user/stats/${user.id}`)
+      fetch(`${process.env.REACT_APP_API_URL}/user/stats/${user.id}`)
         .then((res) => res.json())
         .then((data) => setStats(data))
         .catch((err) => console.error("Error fetching stats:", err));
