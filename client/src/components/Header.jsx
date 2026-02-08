@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/Theme";
+import { API_URL } from "../config";
 
 function Header() {
   const { user, logout } = useContext(AuthContext);
@@ -15,7 +16,7 @@ function Header() {
 
   useEffect(() => {
     if (user?.id) {
-      fetch(`${process.env.REACT_APP_API_URL}/user/stats/${user.id}`)
+      fetch(`${API_URL}/user/stats/${user.id}`)
         .then((res) => res.json())
         .then((data) => setStats(data))
         .catch((err) => console.error("Error fetching stats:", err));

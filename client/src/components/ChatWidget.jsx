@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { ThemeContext } from "../context/Theme";
+import { API_URL } from "../config";
 
 // Icons
 const ChatIcon = () => (
@@ -79,7 +80,7 @@ function ChatWidget() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/chatbot`, {
+      const response = await fetch(`${API_URL}/api/chatbot`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

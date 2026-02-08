@@ -1,3 +1,5 @@
+import { API_URL } from "../config";
+
 export const handleCheckout = async (userId, product) => {
   if (!userId) {
     alert("Please log in to purchase courses.");
@@ -6,7 +8,7 @@ export const handleCheckout = async (userId, product) => {
 
   try {
     const response = await fetch(
-      `${process.env.REACT_APP_API_URL}/create-checkout-session`,
+      `${API_URL}/create-checkout-session`,
       {
         method: "POST",
         headers: {

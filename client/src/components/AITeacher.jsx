@@ -8,6 +8,7 @@ import React, {
 import Webcam from "react-webcam";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { WS_URL } from "../config";
 import QuizModal from "./OuizModal";
 import CodeEditor from "./CodeEditor";
 import Whiteboard from "./Whiteboard";
@@ -132,7 +133,7 @@ function AITeacher() {
     if (ws.current) return;
 
     console.log("🔌 Connecting to WebSocket...");
-    const socket = new WebSocket(process.env.REACT_APP_WS_URL || "ws://localhost:8080");
+    const socket = new WebSocket(WS_URL);
     ws.current = socket;
 
     socket.onopen = () => {
@@ -198,6 +199,7 @@ function AITeacher() {
       window.speechSynthesis.cancel();
       clearInterval(autoInterval.current);
     };
+  // eslint-disable-next-line no-use-before-define -- handleSend is stable (useCallback)
   }, [course, user, handleSend]);
 
   // VIDEO HANDLING

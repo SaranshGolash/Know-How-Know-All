@@ -2,9 +2,10 @@
   "name": "knowhowknowall-root",
   "version": "1.0.0",
   "scripts": {
-    "start": "cd client && npm start",
-    "build": "cd client && npm install && npm run build",
-    "test": "cd client && npm test"
+    "start": "npm start --prefix client",
+    "start:server": "npm start --prefix server",
+    "build": "npm run build --prefix client",
+    "test": "npm test --prefix client"
   },
   "engines": {
     "node": "24.x"

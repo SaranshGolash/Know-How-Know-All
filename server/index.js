@@ -1,21 +1,37 @@
+require("dotenv").config();
+
 const express = require("express");
+const http = require("http");
 const cors = require("cors");
 const pool = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? require("stripe")(process.env.STRIPE_SECRET_KEY)
+  : null;
 const { WebSocketServer } = require("ws");
-require("dotenv").config();
 const db = require("./db");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = process.env.GEMINI_API_KEY
+  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  : null;
 
-// Middleware
-app.use(cors());
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+if (!process.env.JWT_SECRET) {
+  console.warn("⚠️ JWT_SECRET not set. Using dev default. Set in .env for production.");
+}
+
+// Middleware – allow Vercel client in production
+const corsOptions = {
+  origin: CLIENT_URL,
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 function cleanAndParseJSON(text) {
@@ -93,7 +109,7 @@ app.post("/auth/signup", async (req, res) => {
     // Generate JWT Token
     const token = jwt.sign(
       { user_id: newUser.rows[0].user_id },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: "1h" }
     );
 
@@ -135,7 +151,7 @@ app.post("/auth/login", async (req, res) => {
     // Generate JWT Token
     const token = jwt.sign(
       { user_id: user.rows[0].user_id },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: "1h" }
     );
 
@@ -157,6 +173,9 @@ app.post("/auth/login", async (req, res) => {
 // Payment Gateway
 
 app.post("/create-checkout-session", async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: "Payments not configured (STRIPE_SECRET_KEY)" });
+  }
   try {
     const { products, userId } = req.body;
 
@@ -180,8 +199,8 @@ app.post("/create-checkout-session", async (req, res) => {
       line_items: lineItems,
       mode: "payment",
       // Redirect URLs
-      success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/cart`,
+      success_url: `${CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${CLIENT_URL}/cart`,
       // METADATA: Pass info we need to store in DB later
       metadata: {
         userId: userId,
@@ -200,6 +219,9 @@ app.post("/create-checkout-session", async (req, res) => {
 // Verifying and saving to database route
 
 app.post("/payment-success", async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: "Payments not configured (STRIPE_SECRET_KEY)" });
+  }
   try {
     const { sessionId } = req.body;
 
@@ -304,6 +326,11 @@ app.get("/leaderboard", async (req, res) => {
 // CHATBOT ENDPOINT
 
 app.post("/api/chatbot", async (req, res) => {
+  if (!genAI) {
+    return res.status(503).json({
+      error: "Chatbot not configured (GEMINI_API_KEY). Add it to .env to enable.",
+    });
+  }
   try {
     const { message, history } = req.body;
     const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
@@ -326,17 +353,28 @@ app.post("/api/chatbot", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Single server for both HTTP and WebSocket (required for Render – one PORT)
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
 
-const wss = new WebSocketServer({ port: 8080 });
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT} (HTTP + WebSocket)`);
+});
 
 wss.on("connection", (ws) => {
   console.log("🔌 Client connected to AI Teacher");
 
+  if (!genAI) {
+    ws.send(JSON.stringify({
+      type: "ai_response",
+      text: "AI Teacher is not configured (GEMINI_API_KEY). Add it to server .env to enable.",
+      visual: null,
+    }));
+    return;
+  }
+
   const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
-  const fasterModel = genAI.getGenerativeModel({model: 'gemini-3-flash-preview'});
+  const fasterModel = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
   let chatSession = null;
   let isInitializing = false;
@@ -595,4 +633,4 @@ wss.on("connection", (ws) => {
     }
   });
 });
-console.log("✅ WebSocket Server running on port 8080");
+console.log("✅ WebSocket Server attached on same port");

@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import confetti from "canvas-confetti";
+import { API_URL } from "../config";
 
 function QuizModal({ questions, onClose }) {
   const { user } = useContext(AuthContext);
@@ -23,7 +24,7 @@ function QuizModal({ questions, onClose }) {
 
       if (user?.id) {
         try {
-          await fetch(`${process.env.REACT_APP_API_URL}/user/add-xp`, {
+          await fetch(`${API_URL}/user/add-xp`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: user.id, xp: xpToAward }),

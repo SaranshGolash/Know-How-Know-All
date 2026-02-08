@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/Theme";
 import ModernInput from "./ModernInput";
+import { API_URL } from "../config";
 
 function Signup() {
   // Form States
@@ -36,7 +37,7 @@ function Signup() {
 
     try {
       // Send data to the Backend
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/signup`, {
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName, email, password }),

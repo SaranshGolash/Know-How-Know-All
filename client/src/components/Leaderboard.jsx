@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { ThemeContext } from "../context/Theme";
+import { API_URL } from "../config";
 
 function Leaderboard() {
   const [users, setUsers] = useState([]);
@@ -8,7 +9,7 @@ function Leaderboard() {
   const isDark = theme === "dark";
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/leaderboard`)
+    fetch(`${API_URL}/leaderboard`)
       .then((res) => res.json())
       .then((data) => setUsers(data))
       .catch((err) => console.error(err));

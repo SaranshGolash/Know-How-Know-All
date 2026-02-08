@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 
 function Success() {
   const [searchParams] = useSearchParams();
@@ -10,7 +11,7 @@ function Success() {
   useEffect(() => {
     if (sessionId) {
       // Call backend to verify and save to DB
-      fetch(`${process.env.REACT_APP_API_URL}/payment-success`, {
+      fetch(`${API_URL}/payment-success`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId }),

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/Theme"; //
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 
 function MyLearning() {
   const { user } = useContext(AuthContext);
@@ -14,7 +15,7 @@ function MyLearning() {
 
   useEffect(() => {
     if (user?.id) {
-      fetch(`${process.env.REACT_APP_API_URL}/user/purchases/${user.id}`)
+      fetch(`${API_URL}/user/purchases/${user.id}`)
         .then((res) => res.json())
         .then((data) => setCourses(data))
         .catch((err) => console.error(err));

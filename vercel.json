@@ -1,16 +1,9 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
-    }
-  ],
+  "buildCommand": "cd client && npm install && npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": "client/build",
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/client/build/index.html"
-    }
-  ],
-  "outputDirectory": "client/build"
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
