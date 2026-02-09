@@ -16,7 +16,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router-dom": "^7.11.0",
-    "react-scripts": "^0.0.0",
+    "react-scripts": "5.0.1",
     "react-webcam": "^7.2.0",
     "web-vitals": "^2.1.4"
   },
@@ -44,7 +44,8 @@
       "last 1 safari version"
     ]
   },
-  "engines": {
-    "node": ">=20.0.0 <21.0.0"
+  "overrides": {
+    "ajv": "^8.12.0",
+    "ajv-keywords": "^5.1.0"
   }
 }
